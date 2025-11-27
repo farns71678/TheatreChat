@@ -34,13 +34,15 @@ svg {
     font-weight: bold;
 }
 
-.msg-row {
+.msg-row,
+.purchase-row {
     background-color: var(--bs-tertiary-bg);
     border-radius: 0.5em;
     align-items: center;
 }
 
-.msg-row i {
+.msg-row i,
+.purchase-row i {
     margin: 0.20em;
     cursor: pointer;
     display: inline-block;
@@ -48,7 +50,8 @@ svg {
     border-radius: 0.1em;
 }
 
-.msg-row i:hover {
+.msg-row i:hover,
+.purchase-row i:hover {
     background-color: var(--bs-secondary);
 }
 
@@ -66,4 +69,12 @@ svg {
 
 .send-btn:hover {
     color: var(--bs-info);
+}
+
+.purchase-username {
+    color: orange;
+}
+
+.purchase-cost {
+    color: lightskyblue;
 }

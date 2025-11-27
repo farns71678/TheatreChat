@@ -12,6 +12,7 @@ let moderator = null;
 let optionlist = null;
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname + "/public"));
 
 loadMoneySpendingOptionFile();
@@ -21,7 +22,7 @@ app.post('/chatmsg', (req, res) => {
         const body = req.body;
         console.log(body);
 
-        const data = { username: body.username, msg: body.msg };
+        const data = { type: "chat-msg", username: body.username, msg: body.msg };
         if (data.msg && moderator) {
             moderator.send(JSON.stringify(data));
             res.send("success");
@@ -57,6 +58,15 @@ app.get('/btnlist', async (req, res) => {
     catch (err) {
         console.log(`Error occured retreiving btn list: ${err}`);
         res.send(JSON.stringify({ list: [] }));
+    }
+});
+
+app.post('/purchaseitem', (req, res) => {
+    const purchase = req.body;
+    console.log(purchase);
+
+    if (moderator && moderator.readyState == WebSocket.OPEN && purchase.username) {
+        moderator.send(JSON.stringify({ type: "purchase", username: purchase.username, description: purchase.description, cost: purchase.cost }));
     }
 });
 

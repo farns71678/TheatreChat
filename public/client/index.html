@@ -53,19 +53,19 @@
     </form>
 
     <!--purchase modal-->
-    <div class="modal fade" id="purchase-modal" tabindex="-1" aria-labelledby="purchase-modal-label" aria-hidden="true">
-        <div class="modal-dialog">
+    <div class="modal fade" id="purchase-modal" tabindex="-1" aria-labelledby="purchase-modal-label" aria-hidden="true" data-item-cost="" data-item-description="">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="purchase-modal-label">Purchase Item</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Confirm purchase to make an actor <span id="purchase-description"></span>?
+                    Confirm purchase to make an actor <span id="purchase-description"></span> for <span id="purchase-cost"></span>?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Purchase</button>
+                    <button id="confirm-purchase-btn" type="button" class="btn btn-primary" data-bs-dismiss="modal">Purchase</button>
                 </div>
             </div>
         </div>
