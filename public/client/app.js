@@ -18,7 +18,7 @@ if (purchaseModal) {
 
         const purchaseCost = purchaseModal.querySelector('#purchase-cost');
         const purchaseDescription = purchaseModal.querySelector('#purchase-description');
-        purchaseCost.innerText = cost;
+        purchaseCost.innerText = "$" + cost;
         purchaseDescription.innerText = description; 
         purchaseModal.setAttribute('data-item-description', description);
         purchaseModal.setAttribute('data-item-cost', cost);
@@ -73,13 +73,13 @@ function sendChatMsg() {
 async function loadOptions() {
     try {
         const optionsContainer = document.getElementById('options-container');
-        const res = await fetch('/btnlist');
+        const res = await fetch('/purchaseoptions');
         const data = await res.json();
         optionsContainer.innerHTML = "";
 
-        data.list.forEach(item => {
+        data.options.forEach(item => {
             const row = document.createElement('div');
-            row.innerHTML = `<div class="option-row d-flex p-1"><div class="price m-1">${item.price}</div><div class="option-text flex-grow-1 m-1">${item.description}</div><div class="m-1"><button type="button" class="icon-btn" data-bs-toggle="modal" data-bs-target="#purchase-modal" data-bs-description="${item.description}" data-bs-cost="${item.price}"><i class="bi bi-bag-heart purchase-btn"></i></button></div></div>`;
+            row.innerHTML = `<div class="option-row d-flex p-1"><div class="price m-1">$${item.cost}</div><div class="option-text flex-grow-1 m-1">${item.description}</div><div class="m-1"><button type="button" class="icon-btn" data-bs-toggle="modal" data-bs-target="#purchase-modal" data-bs-description="${item.description}" data-bs-cost="${item.cost}"><i class="bi bi-bag-heart purchase-btn"></i></button></div></div>`;
             
             // const shopIcon = row.querySelector('.purchase-btn');
 

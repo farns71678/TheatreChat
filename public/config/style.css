@@ -1,0 +1,97 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Share+Tech&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap");
+
+:root {
+    --default-background: rgb(9, 1, 44);
+    --default-color: rgb(242, 245, 252);
+}
+
+* {
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--default-color);
+    box-sizing: border-box;
+    font-family: "Nunito", "Noto Sans", "Share Tech", Arial, Helvetica, sans-serif;
+}
+
+body {
+    background-color: var(--default-background);
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
+}
+
+svg {
+    background-color: transparent;
+}
+
+.err {
+    color: red;
+    font-weight: bold;
+}
+
+.icon-row {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+}
+
+.icon-row button:hover {
+    background-color: rgba(110, 145, 167, 0.449);
+}
+
+.icon-row button i {
+    color: lightgrey;
+}
+
+.icon-row button:hover i {
+    color: white;
+}
+
+.purchase-item {
+    background-color: rgb(85 133 162 / 33%);
+    border-radius: 0.1em;
+}
+
+.purchase-item.edited {
+    background-color: var(--bs-warning-bg-subtle);
+}
+
+.purchase-item.deleted {
+    background-color: var(--bs-danger-bg-subtle);
+}
+
+.purchase-item.new.deleted {
+    background-color: var(--bs-danger-bg-subtle);
+}
+
+.purchase-item.new {
+    background-color: #0b3522;
+}
+
+.purchase-item.edited.new {
+    background-color: #0b3522;
+}
+
+.purchase-cost {
+    font-weight: bold;
+    color: orange;
+}
+
+.purchase-description {
+    font-weight: bold;
+    color: lightskyblue;
+}
+
+#purchase-cost-input {
+    width: 85px;
+}
+
+.purchase-content {
+    display: flex;
+    align-items: center;
+}
+
+.hidden {
+    display: none !important;
+}
