@@ -2,9 +2,15 @@ const createPurchaseBtn = document.getElementById("create-purchase-btn");
 const clearPurchaseBtn = document.getElementById("clear-purchase-btn");
 const purchaseCostInput = document.getElementById("purchase-cost-input");
 const purchaseDescriptionInput = document.getElementById("purchase-description-input");
-const purchaseItems = document.getElementById("purchase-items");
+//const purchaseItems = document.getElementById("purchase-items");
 const purchaseSaveBtn = document.getElementById("save-purchases-btn");
 const createErr = document.getElementById("create-purchase-err");
+
+const ButtonState = {
+    Enabled: 0,
+    Disabled: 1,
+    Loading: 2
+};
 
 loadPurchaseOptions();
 
@@ -34,11 +40,11 @@ createPurchaseBtn.addEventListener("click", () => {
 purchaseSaveBtn.addEventListener("click", async () => {
     try {
         createErr.innerText = "";
-        purchaseSaveBtn.disabled = true;
+        setBtnState(purchaseSaveBtn, "Saving", ButtonState.Loading);
         const purchaseItems = document.querySelectorAll(".purchase-item:not(#create-purchase-form)");
 
         if (purchaseItems.length == 0) {
-            purchaseSaveBtn.disabled = false;
+            setBtnState(purchaseSaveBtn, "Save");
             return;
         }
 
@@ -77,11 +83,37 @@ purchaseSaveBtn.addEventListener("click", async () => {
         console.log(`An error occured saving purchase options: ${error}`);
         createErr.innerText = "Unable to save modified purchase options";
     }
-    purchaseSaveBtn.disabled = false;
+    setBtnState(purchaseSaveBtn, "Save");
 });
+
+document.getElementById("revert-changes-btn").addEventListener("click", () => {
+    const purchaseItems = document.querySelectorAll(".purchase-item:not(#create-purchase-form)");
+    for (let i = 0; i < purchaseItems.length; i++) {
+        const purchaseEl = purchaseItems[i];
+        purchaseEl.querySelector(".icon-row.revert-icon").classList.add("hidden");
+        purchaseEl.querySelector(".icon-row:not(.revert-icon)").classList.remove("hidden");
+
+        if (purchaseEl.classList.contains("edited")) {
+            //edited
+            const cost = parseFloat(purchaseEl.getAttribute("data-cost"));
+            const description = purchaseEl.getAttribute("data-description");
+            purchaseEl.querySelector(".purchase-content").innerHTML = `$<span class="purchase-cost me-2">${cost}</span> 
+                    Description: <span class="purchase-description ms-1">${description}</span>`;
+
+            purchaseEl.classList.remove("edited");
+        }
+        else if (purchaseEl.classList.contains("new")) {
+            purchaseEl.remove();
+        }
+        else {
+            purchaseEl.classList.remove("deleted");
+        }
+    }
+})
 
 async function loadPurchaseOptions() {
     try {
+        setBtnState(purchaseSaveBtn, "Loading", ButtonState.Loading);
         const res = await fetch('/purchaseoptions');
         if (!res.ok) {
             createErr.innerText = "Unable to load purchase options. Try reloading. ";
@@ -90,11 +122,12 @@ async function loadPurchaseOptions() {
 
         const data = await res.json();
         fillPurchaseOptions(data);
-        purchaseSaveBtn.disabled = false;
+        setBtnState(purchaseSaveBtn, "Save");
     }
     catch (error) {
         console.log(`Error loading purchase options: ${error}`);
         createErr.innerText = "Unable to load purchase options. Try reloading. ";
+        setBtnState(purchaseSaveBtn, "Loading", ButtonState.Disabled);
     }
 }
 
@@ -151,7 +184,7 @@ function revertPurchaseChanges() {
 }
 
 function fillPurchaseOptions(data) {
-    purchaseItems.innerHTML = "";
+    document.getElementById("purchase-items").innerHTML = "";
     data.options.forEach(option => {
         createPurchaseOption(option, false);
     });
@@ -176,7 +209,30 @@ function createPurchaseOption(option, created = true) {
     row.querySelector(".remove-purchase-btn").addEventListener("click", deletePurchaseOption);
     row.querySelector(".revert-purchase-btn").addEventListener("click", revertPurchaseChanges);
 
-    purchaseItems.appendChild(row);
+    document.getElementById("purchase-items").appendChild(row);
+}
+
+// we recommend this function is used on a button with display: flex and align-items: center
+function setBtnState(btn, text, state = ButtonState.Enabled) {
+    try {
+        if (state == ButtonState.Disabled) {
+            btn.disabled = true;
+            btn.innerHTML = text;
+        }
+        else if (state == ButtonState.Loading) {
+            btn.disabled = true;
+            btn.innerHTML = `<span class="me-1">${text}</span><div class="spinner-border spinner-border-sm" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                            </div>`;
+        }
+        else {
+            btn.disabled = false;
+            btn.innerHTML = text;
+        }
+    }
+    catch (error) {
+        console.log(`Error setting btn state: ${error}`);
+    }
 }
 
 function createElementFromHTML(htmlString) {

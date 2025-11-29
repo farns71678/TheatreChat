@@ -19,7 +19,7 @@
 
     <h2>Purchase Options</h2>
     <div id="purchase-items">
-        <div class="purchase-item d-flex w-100 p-2 align-items-center rounded-1 ps-3 mb-1">
+        <!--<div class="purchase-item d-flex w-100 p-2 align-items-center rounded-1 ps-3 mb-1">
             <div class="purchase-content">
                 $<span class="purchase-cost me-2">2</span> 
                 Description: <span class="purchase-description ms-1">Chew a piece of gum</span> 
@@ -41,7 +41,7 @@
                 <button class="btn purchase-icon-btn rounded-1"><i class="bi bi-pencil-square"></i></button>
                 <button class="btn purchase-icon-btn rounded-1"><i class="bi bi-trash-fill"></i></button>
             </span>
-        </div>
+        </div>-->
         
     </div>
     <div id="create-purchase-form" class="purchase-item d-flex w-100 p-2 align-items-center rounded-1 ps-3">
@@ -57,8 +57,15 @@
 
     <div id="save-row" class="d-flex align-items-center justify-content-end p-1 mt-1">
         <p id="create-purchase-err" class="err mb-0 me-2"></p>
-        <button id="save-purchases-btn" class="btn rounded-1 btn-primary fw-bold" disabled>Save</button>
+        <button id="revert-changes-btn" class="btn rounded-1 btn-outline-secondary fw-bold d-flex align-items-center me-2">Revert</button>
+        <button id="save-purchases-btn" class="btn rounded-1 btn-primary fw-bold d-flex align-items-center" disabled>Save</button>
     </div>
+
+    <h2>Page Links</h2>
+    <p><strong>Client Page: </strong><a href="/client" target="_blank">http://localhost:3000/client</a></p>
+    <p><strong>Display Page: </strong><a href="/display" target="_blank">http://localhost:3000/display</a></p>
+    <p><strong>Moderator Page: </strong><a href="/moderator" target="_blank">http://localhost:3000/moderator</a></p>
+    <p><strong>Config Page: </strong><a href="/config" target="_blank">http://localhost:3000/config</a></p>
 
     <script src="/config/app.js"></script>
 </body>

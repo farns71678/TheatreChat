@@ -83,7 +83,7 @@ svg {
     color: lightskyblue;
 }
 
-#purchase-cost-input {
+.purchase-item input.purchase-cost {
     width: 85px;
 }
 
