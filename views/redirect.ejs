@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>This page should redirect</title>
+</head>
+<body>
+    <script>
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const durl = params.get("durl");
+            if (durl) {
+                location.assign("/" + durl);
+            }
+        }
+        catch (err) {
+            location.assign("/login");
+        }
+    </script>
+</body>
+</html>

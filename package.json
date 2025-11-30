@@ -4,14 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node index.js",
-    "debug": "npx nodemon --inspect index.js"
+    "test": "node --env-file=.env index.js",
+    "debug": "npx nodemon --inspect --env-file=.env index.js"
   },
   "author": "Michael Farnsworth",
   "license": "ISC",
   "dependencies": {
+    "cookie": "^1.1.1",
+    "cookie-parser": "^1.4.7",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "uuid": "^13.0.0",
     "ws": "^8.18.3"
   },

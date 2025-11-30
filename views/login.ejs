@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theatre Chat Login</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="/login/style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+</head>
+
+<body class="container p-2 pt-3">
+    <div id="center-column">
+        <form id="login-form">
+            <div id="form-header">Log In</div>
+            <!--<div class="input-item">
+                <input type="text" name="username" id="username-input" placeholder="Username" />
+                <div id="username-err" class="form-err"></div>
+            </div>-->
+            <div class="input-item">
+                <input type="password" name="password" id="password-input" placeholder="Password" />
+                <div id="password-err" class="form-err"></div>
+            </div>
+            <input type="submit" value="Log In" class="btn btn-outline-primary rounded-1" />
+        </form>
+    </div>
+    <script src="/login/app.js"></script>
+</body>
+
+</html>
