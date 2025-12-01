@@ -24,6 +24,10 @@ app.set('view engine', 'ejs');
 
 // big TODO: handle chat and purchase state on server
 
+app.get('/', (req, res) => {
+    res.redirect('/client');
+});
+
 app.get('/config', checkUser, requireAdminAuth, (req, res) => {
     res.render('config');
 });

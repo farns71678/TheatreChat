@@ -63,6 +63,11 @@ function sendChatMsg() {
             },
             body: JSON.stringify({ username, msg })
         });
+
+        const msgContainer = document.getElementById("msg-container");
+        msgContainer.appendChild(createElementFromHTML(`<div class='msg-row d-flex w-100 mt-1 mb-1 p-0 ps-1 p3-1' data-msg="${encodeURIComponent(msg)}"><div class='msg flex-grow-1'>${msg}</div><span class='icon-row'></span></div>`))
+        const last = msgContainer.querySelector(".msg-row:last-child");
+        last.scrollIntoView({ behavior: 'smooth' });
         msgBox.value = "";
     }
     catch (err) {
@@ -93,4 +98,12 @@ async function loadOptions() {
     catch (err) {
         console.log(`Couldn't get option files: ${err}`);
     }
+}
+
+function createElementFromHTML(htmlString) {
+  var div = document.createElement('div');
+  div.innerHTML = htmlString.trim();
+
+  // Change this to div.childNodes to support multiple top-level nodes.
+  return div.firstChild;
 }
