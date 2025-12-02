@@ -1,5 +1,9 @@
 const msgBox = document.getElementById('msg-container');
-const socketUrl = "ws://localhost:8080";
+const currentUrl = window.location.href;
+const urlObj = new URL(currentUrl);
+const domain = urlObj.hostname;
+const port = urlObj.port || (urlObj.protocol === "https:" ? "443" : "80");
+const socketUrl = `ws://${domain}:${port}/ws/display`;
 let socket = null;
 
 try {

@@ -7,12 +7,10 @@ const { checkUser, requireAuth, requireAdminAuth } = require('./middleware/authM
 const moderator = require('./include/moderator');
 const authRoutes = require('./routes/authRoutes');
 const dataRoutes = require('./routes/dataRoutes');
+const http = require('http');
 const express = require('express');
 const app = express();
-const port = 3000;
-const wssPort = 5600;
-const wssModerator = new WebSocket.Server({ port: wssPort });
-const wssDisplay = new WebSocket.Server({ port: 8080 });
+const port = process.env.PORT || 3000;
 let displays = new Map();
 
 app.use(express.json());
@@ -40,10 +38,31 @@ app.get('/moderator', checkUser, requireAuth, (req, res) => {
 app.use(authRoutes);
 app.use(dataRoutes);
 
+// incase of 404 redirect to client page
+app.use((req, res) => {
+    res.redirect("/client");
+});
 
 // websocket stuff
+const server = http.createServer(app);
 
-wssModerator.on('connection', (socket, req, client) => {
+const wss = new WebSocket.Server({ noServer: true });
+
+server.on('upgrade', (request, socket, head) => {
+    const { url } = request;
+
+    if (url === '/ws/moderator') {
+        wss.handleUpgrade(request, socket, head, handleModeratorConnection);
+    }
+    else if (url === '/ws/display') {
+        wss.handleUpgrade(request, socket, head, handleDisplayConnection);
+    }
+    else {
+        socket.destroy();
+    }
+})
+
+function handleModeratorConnection(socket, req) {
     try {
 
         const sessionId = cookie.parse(req.headers.cookie || '').sessionId;
@@ -86,15 +105,15 @@ wssModerator.on('connection', (socket, req, client) => {
     catch (error) {
         console.log(`An Error occured on moderator connection: ${error}`);
     }
-});
+}
 
-wssDisplay.on('connection', (socket) => {
+
+function handleDisplayConnection(socket, req) {
     let clientId = uuid.v4();
     displays.set(clientId, socket);
-});
+}
 
 
-
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`Client port listening on port ${port}`);
 });

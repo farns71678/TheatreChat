@@ -1,6 +1,10 @@
 const msgBox = document.getElementById('msg-container');
 const purchaseBox = document.getElementById('purchase-container');
-const socketUrl = "ws://localhost:5600";
+const currentUrl = window.location.href;
+const urlObj = new URL(currentUrl);
+const domain = urlObj.hostname;
+const port = urlObj.port || (urlObj.protocol === "https:" ? "443" : "80");
+const socketUrl = `ws://${domain}:${port}/ws/moderator`;
 let socket = null;
 
 try {
