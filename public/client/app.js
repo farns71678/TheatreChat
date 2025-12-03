@@ -22,23 +22,45 @@ if (purchaseModal) {
         purchaseDescription.innerText = description; 
         purchaseModal.setAttribute('data-item-description', description);
         purchaseModal.setAttribute('data-item-cost', cost);
+
+        const purchaseErr = purchaseModal.querySelector("#purchase-modal-err");
+        purchaseErr.innerText = "";
     });
 }
 
 const purchaseButton = document.getElementById("confirm-purchase-btn");
 if (purchaseButton) {
     purchaseButton.addEventListener('click', async () => {
+
         const cost = purchaseModal.getAttribute('data-item-cost');
         const description = purchaseModal.getAttribute('data-item-description');
         const username = document.getElementById("username-input").value.trim();
+        const purchaseErr = purchaseModal.querySelector("#purchase-modal-err");
+        purchaseErr.innerText = "";
 
-        fetch('/purchaseitem', {
+        if (!username) {
+            purchaseErr.innerText = "You must provide a username to make a purchase. ";
+            return;
+        }
+        purchaseButton.disabled = true;
+
+        const res = await fetch('/purchaseitem', {
             method: 'POST',
             headers: {
                 'Content-type': 'application/json; charset=UTF-8'
             },
             body: JSON.stringify({ username, cost, description })
         });
+
+        purchaseButton.disabled = false;
+
+        if (res.ok) {
+            purchaseModal.hide();
+        }
+        else {
+            purchaseErr.innerText = "Sorry, we couldn't process the purchase";
+        }
+
     });
 }
 

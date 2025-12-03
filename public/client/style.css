@@ -79,3 +79,8 @@ svg {
     font-weight: bold;
     color: orange;
 }
+
+.err {
+    font-weight: bold;
+    color: red;
+}
