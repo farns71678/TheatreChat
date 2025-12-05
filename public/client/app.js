@@ -37,11 +37,7 @@ if (purchaseButton) {
         const username = document.getElementById("username-input").value.trim();
         const purchaseErr = purchaseModal.querySelector("#purchase-modal-err");
         purchaseErr.innerText = "";
-
-        if (!username) {
-            purchaseErr.innerText = "You must provide a username to make a purchase. ";
-            return;
-        }
+        
         purchaseButton.disabled = true;
 
         const res = await fetch('/purchaseitem', {
@@ -58,7 +54,8 @@ if (purchaseButton) {
             purchaseModal.hide();
         }
         else {
-            purchaseErr.innerText = "Sorry, we couldn't process the purchase";
+            const data = await res.json();
+            purchaseErr.innerText = data.error || "Sorry, we couldn't process the purchase";
         }
 
     });
