@@ -22,34 +22,35 @@
 
     <ul class="nav nav-tabs" id="moderator-tabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat-tab-pane"
+            <button class="nav-link active" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat-tab-pane"
                 type="button" role="tab" aria-controls="chat-tab-pane" aria-selected="true">Chat</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="purchase-tab" data-bs-toggle="tab" data-bs-target="#purchase-tab-pane"
+            <button class="nav-link" id="purchase-tab" data-bs-toggle="tab" data-bs-target="#purchase-tab-pane"
                 type="button" role="tab" aria-controls="purchase-tab-pane" aria-selected="true">Purchases</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="sent-chat-tab" data-bs-toggle="tab" data-bs-target="#sent-chat-tab-pane"
+                type="button" role="tab" aria-controls="sent-chat-tab-pane" aria-selected="true">Sent Messages</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="purchased-tab" data-bs-toggle="tab" data-bs-target="#purchased-tab-pane"
+                type="button" role="tab" aria-controls="purchased-tab-pane" aria-selected="true">Items Purchased</button>
         </li>
 
     </ul>
     <div class="tab-content" id="moderator-tab-content">
-        <div class="tab-pane show" id="chat-tab-pane" role="tabpanel" aria-labelledby="chat-tab" tabindex="0">
+        <div class="tab-pane show active" id="chat-tab-pane" role="tabpanel" aria-labelledby="chat-tab" tabindex="0">
             <div id="msg-container"></div>
         </div>
-        <div class="tab-pane show active" id="purchase-tab-pane" role="tabpanel" aria-labelledby="purchase-tab" tabindex="0">
-            <div id="purchase-container">
-                <!-- <div class='purchase-row w-100 p-2 ps-3 mb-2 mt-2'>
-                    <div class="d-flex w-100 align-items-center">
-                        <div>
-                            Purchased by: <span class="purchase-username ms-2">farnz</span>
-                            <div class="d-flex align-items-center">
-                                <div class="purchase-cost me-2">$1</div>
-                                <div class='msg flex-grow-1'>Make an actor chew gum</div>
-                            </div>
-                        </div>
-                        <span class='icon-row ms-auto'><i class="bi bi-x-circle clear-purchase"></i></span>
-                    </div>
-                </div> -->
-            </div>
+        <div class="tab-pane show" id="purchase-tab-pane" role="tabpanel" aria-labelledby="purchase-tab" tabindex="0">
+            <div id="purchase-container"></div>
+        </div>
+        <div class="tab-pane show active" id="sent-chat-tab-pane" role="tabpanel" aria-labelledby="chat-tab" tabindex="0">
+            <div id="sent-msg-container"></div>
+        </div>
+        <div class="tab-pane show" id="purchased-tab-pane" role="tabpanel" aria-labelledby="chat-tab" tabindex="0">
+            <div id="purchased-container"></div>
         </div>
     </div>
 

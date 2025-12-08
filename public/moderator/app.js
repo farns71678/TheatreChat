@@ -27,10 +27,11 @@ try {
         //console.log(res);
 
         if (res.type === "chat-msg") {
-            if (!res.msg) return;
+            if (!res.data || !res.data.msg) return;
 
-            let row = document.createElement('div');
-            row.innerHTML = `<div class='msg-row d-flex w-100 p-2 ps-3 mb-2 mt-2' data-msg="${encodeURIComponent(JSON.stringify(res))}"><div class='msg flex-grow-1'>${res.msg}</div><span class='icon-row'><i class="bi bi-trash-fill trash-btn"></i><i class="bi bi-send-fill send-btn"></i></span></div>`;
+            const msg = res.data;
+
+            const row = createElementFromHTML(`<div class='msg-row d-flex w-100 p-2 ps-3 mb-2 mt-2' data-id="${msg.id}" data-msg="${encodeURIComponent(JSON.stringify(msg))}"><div class='msg flex-grow-1'>${msg.msg}</div><span class='icon-row'><i class="bi bi-trash-fill trash-btn"></i><i class="bi bi-send-fill send-btn"></i></span></div>`);
             
             row.querySelector(".trash-btn").addEventListener("click", trashMsg);
             row.querySelector(".send-btn").addEventListener("click", sendMsg);
@@ -59,7 +60,18 @@ try {
 
             purchaseBox.appendChild(row);
         }
-    })
+        else if (res.type === "display-msg" && res.id) {
+            const msgEl = document.querySelector(`.msg-row[data-id='${res.id}']`);
+            if (msgEl.parentNode.id === "msg-container") {
+                msgEl.remove();
+                document.getElementById("purchased-container").appendChild(msgEl);
+            }
+        }
+        else if (res.type === "delete-msg" && res.id) {
+            const msgEl = document.querySelector(`.msg-row[data-id='${res.id}'`);
+            if (msgEl) msgEl.remove();
+        }
+    });
 }
 catch (err) {
     console.log(`Unable to connect to WebSocket: ${err}`);
@@ -67,7 +79,14 @@ catch (err) {
 
 function trashMsg() {
     const row = this.closest(".msg-row");
-    row.remove();
+    // row.remove();
+    const msg = JSON.parse(decodeURIComponent(row.getAttribute('data-msg')));
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: "delete-msg", id: msg.id }));
+    }
+    else {
+        console.log("Unable to delete message");
+    }
 }
 
 function dismissPurchase() {
@@ -87,13 +106,22 @@ function clearPurchaseBtnLeave() {
 
 function sendMsg() {
     const row = this.closest(".msg-row");
-    const msg = decodeURIComponent(row.getAttribute('data-msg'));
+    const msg = JSON.parse(decodeURIComponent(row.getAttribute('data-msg')));
     if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(msg);
+        const reply = { type: "display-msg", data: msg };
+        socket.send(JSON.stringify(reply));
         console.log(`Sending message: ${msg}`);
-        row.remove();
+        //row.remove();
     }
     else {
         console.log("unable to send message to client")
     }
+}
+
+function createElementFromHTML(htmlString) {
+  var div = document.createElement('div');
+  div.innerHTML = htmlString.trim();
+
+  // Change this to div.childNodes to support multiple top-level nodes.
+  return div.firstChild;
 }

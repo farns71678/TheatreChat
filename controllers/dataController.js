@@ -1,6 +1,7 @@
 const fs = require('node:fs/promises');
 const WebSocket = require('ws');
-const moderator = require('../include/moderator');
+const uuid = require('uuid');
+const { moderators, chatMessages, MsgState } = require('../include/moderator');
 const optionsFilePath = './include/data/waystospendyourmoney.csv';
 let optionlist = null;
 
@@ -9,9 +10,15 @@ const chatmsg_post = (req, res) => {
         const body = req.body;
         console.log(body);
 
-        const data = { type: "chat-msg", username: body.username, msg: body.msg };
-        if (data.msg && moderator.socket) {
-            moderator.socket.send(JSON.stringify(data));
+        const createdMsg = { id: uuid.v4(), username: body.username, msg: body.msg, state: MsgState.pending };
+        const data = { type: "chat-msg", data: createdMsg };
+        if (data.data.msg && moderators.size > 0) {
+            moderators.forEach((moderator) => {
+                if (moderator.socket && moderator.readyState === WebSocket.readyState) {
+                    moderator.socket.send(JSON.stringify(data));
+                }
+            });
+            chatMessages.push(createdMsg);
             res.send("success");
             return;
         }
@@ -89,8 +96,12 @@ const purchaseItem_post = (req, res) => {
         return res.status(400).json({ error: "Username required to make purchase" });
     }
 
-    if (moderator.socket && moderator.socket.readyState == WebSocket.OPEN) {
-        moderator.socket.send(JSON.stringify({ type: "purchase", username: purchase.username, description: purchase.description, cost: purchase.cost }));
+    if (moderators.size > 0) {
+        moderators.forEach(moderator => {
+            if (moderator.socket && moderator.socket.readyState == WebSocket.OPEN) {
+                moderator.socket.send(JSON.stringify({ type: "purchase", username: purchase.username, description: purchase.description, cost: purchase.cost }));
+            }
+        });
         res.json({ msg: "Success" });
     }
     else {

@@ -22,15 +22,35 @@ try {
     });
 
     socket.addEventListener("message", async (event) => {
-        let res = JSON.parse(await event.data.text());
+        const res = JSON.parse(await event.data);
+        const data = res.data;
         console.log(res);
 
-        let row = document.createElement('div');
-        row.innerHTML = `<div class='msg-row d-flex w-100 p-2 ps-3 mb-2 mt-2' data-msg="${encodeURIComponent(JSON.stringify(res))}"><div class='msg flex-grow-1'>${res.msg}</div></div>`;
+        if (res.type === 'display-msg') {
 
-        msgBox.appendChild(row);
-    })
+            const row = createElementFromHTML(`<div class='msg-row d-flex w-100 p-2 ps-3 mb-2 mt-2' data-id="${data.id}" data-msg="${encodeURIComponent(JSON.stringify(data))}"><div class='msg flex-grow-1'>${data.msg}</div></div>`);
+
+            msgBox.appendChild(row);
+        }
+        else if (res.type === 'delete-msg' && res.id) {
+            const msgEl = document.querySelector(`div.msg-row[data-id="${res.id}"]`);
+            if (msgEl) {
+                msgEl.remove();
+            }
+            else {
+                console.log(`Unable to remove element with id ${res.id} because it was not found`);
+            }
+        }
+    });
 }
 catch (err) {
     console.log(`Unable to connect to WebSocket: ${err}`);
+}
+
+function createElementFromHTML(htmlString) {
+  var div = document.createElement('div');
+  div.innerHTML = htmlString.trim();
+
+  // Change this to div.childNodes to support multiple top-level nodes.
+  return div.firstChild;
 }
