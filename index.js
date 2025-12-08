@@ -45,13 +45,29 @@ app.use((req, res) => {
 
 // websocket stuff
 const server = http.createServer(app);
-
 const wss = new WebSocket.Server({ noServer: true });
+const createPongMessage = (timestamp) => JSON.stringify({ type: 'pong', timestamp });
 
 server.on('upgrade', (request, socket, head) => {
     const { url } = request;
 
     if (url === '/ws/moderator') {
+        const sessionId = cookie.parse(request.headers.cookie || '').sessionId;
+        if (!sessionId) {
+            // Send error message before closing
+            socket.write('HTTP/1.1 401 Unauthorized\r\nContent-Type: application/json\r\nContent-Length: 58\r\n\r\n');
+            socket.write(JSON.stringify({ type: 'error', code: 'UNAUTHORIZED', message: 'No session found' }));
+            socket.destroy();
+            return;
+        }
+
+        const session = sessions.get(sessionId);
+        if (!session || new Date().getTime() >= session.timestamp + maxSessionAge * 1000) {
+            socket.write('HTTP/1.1 401 Unauthorized\r\nContent-Type: application/json\r\nContent-Length: 60\r\n\r\n');
+            socket.write(JSON.stringify({ type: 'error', code: 'UNAUTHORIZED', message: 'Session expired' }));
+            socket.destroy();
+            return;
+        }
         wss.handleUpgrade(request, socket, head, handleModeratorConnection);
     }
     else if (url === '/ws/display') {
@@ -60,21 +76,11 @@ server.on('upgrade', (request, socket, head) => {
     else {
         socket.destroy();
     }
-})
+});
+
 
 function handleModeratorConnection(socket, req) {
     try {
-
-        const sessionId = cookie.parse(req.headers.cookie || '').sessionId;
-        if (!sessionId) {
-            socket.close(1008, "Unauthorized");
-            return;
-        }
-
-        const session = sessions.get(sessionId);
-        if (!session || new Date().getTime() >= session.timestamp + maxSessionAge * 1000) {
-            return socket.close(1008, "Unauthorized");
-        }
         
         const moderatorId = uuid.v4();
         const moderator = { id: moderatorId, socket };
@@ -82,10 +88,13 @@ function handleModeratorConnection(socket, req) {
 
         socket.on('message', (msg) => {
             try {
-                const message = JSON.parse(msg);
+                const message = JSON.parse(Buffer.isBuffer(msg) ? msg.toString() : msg);
                 const data = message.data;
 
-                if (message.type === 'display-msg' && data.id) {
+                if (message.type === 'ping') {
+                    socket.send(createPongMessage(msg.timestamp));
+                }
+                else if (message.type === 'display-msg' && data.id) {
                     const storedMsg = chatMessages.find(m => m.id === data.id);
                     if (storedMsg && storedMsg.state === MsgState.pending) {
                         storedMsg.state = MsgState.displayed;
@@ -139,8 +148,27 @@ function handleModeratorConnection(socket, req) {
 }
 
 
+
 function handleDisplayConnection(socket, req) {
-    let clientId = uuid.v4();
+    const clientId = uuid.v4();
+    socket.isAlive = true;
+
+    socket.on("message", (msg) => {
+        try {
+            const data = JSON.parse(msg);
+
+            if (data.type === 'ping') {
+                socket.send(createPongMessage(msg.timestamp));
+            }
+        }
+        catch (err) {
+            console.log(`Invalid socket display message: ${err}`);
+        }
+    })
+
+    socket.on("close", () => {
+        displays.delete(clientId);
+    });
     displays.set(clientId, socket);
 }
 
