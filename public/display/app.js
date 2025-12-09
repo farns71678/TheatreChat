@@ -12,10 +12,7 @@ class DisplaySocket extends WebSocketWithHeartbeat {
         const data = message.data;
 
         if (message.type === 'display-msg') {
-
-            const row = createElementFromHTML(`<div class='msg-row d-flex w-100 p-2 ps-3 mb-2 mt-2' data-id="${data.id}" data-msg="${encodeURIComponent(JSON.stringify(data))}"><div class='msg flex-grow-1'>${data.msg}</div></div>`);
-
-            msgBox.appendChild(row);
+            addMsgRow(data);
         }
         else if (message.type === 'delete-msg' && message.id) {
             const msgEl = document.querySelector(`div.msg-row[data-id="${message.id}"]`);
@@ -26,9 +23,24 @@ class DisplaySocket extends WebSocketWithHeartbeat {
                 console.log(`Unable to remove element with id ${message.id} because it was not found`);
             }
         }
+        else if (message.type === 'update-messages' && data) {
+            msgBox.innerHTML = "";
+            data.messages.forEach(message => {
+                addMsgRow(message);
+            })
+        }
+    }
+
+    onOpen() {
+        this.sendMessage(JSON.stringify({ type: "get-messages" }));
     }
 }
 
+function addMsgRow(data) {
+    const row = createElementFromHTML(`<div class='msg-row d-flex w-100 p-2 ps-3 mb-2 mt-2' data-id="${data.id}" data-msg="${encodeURIComponent(JSON.stringify(data))}"><div class='msg flex-grow-1'>${data.msg}</div></div>`);
+
+    msgBox.appendChild(row);
+}
 
 try {
     socket = new DisplaySocket(socketUrl);

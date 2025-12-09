@@ -42,11 +42,14 @@ class ModeratorSocket extends WebSocketWithHeartbeat {
 
             purchaseBox.appendChild(row);
         }
-        else if (message.type === "display-msg" && message.id) {
-            const msgEl = document.querySelector(`.msg-row[data-id='${message.id}']`);
-            if (msgEl.parentNode.id === "msg-container") {
-                msgEl.remove();
-                document.getElementById("purchased-container").appendChild(msgEl);
+        else if (message.type === "display-msg" && message.data) {
+            const data = message.data;
+            if (data) {
+                const msgEl = document.querySelector(`.msg-row[data-id='${data.id}']`);
+                if (msgEl.parentNode.id === "msg-container") {
+                    msgEl.remove();
+                    addSentMsgRow(data);
+                }
             }
         }
         else if (message.type === "delete-msg" && message.id) {
@@ -64,7 +67,7 @@ class ModeratorSocket extends WebSocketWithHeartbeat {
                     addMsgRow(message);
                 }
                 else {
-                    // TODO: support sent message viewing
+                    addSentMsgRow(message);
                 }
             })
         }
@@ -112,6 +115,16 @@ function addMsgRow(data) {
     row.querySelector(".send-btn").addEventListener("click", sendMsg);
 
     msgBox.appendChild(row);
+    return row;
+}
+
+function addSentMsgRow(data) {
+    const sentMsgContainer = document.getElementById("sent-msg-container");
+    const row = createElementFromHTML(`<div class='msg-row d-flex w-100 p-2 ps-3 mb-2 mt-2' data-id="${data.id}" data-msg="${encodeURIComponent(JSON.stringify(data))}"><div class='msg flex-grow-1'>${data.msg}</div><span class='icon-row'><button class="btn trash-btn"><i class="bi bi-trash-fill"></i></button></span></div>`);
+    
+    row.querySelector(".trash-btn").addEventListener("click", trashMsg);
+
+    sentMsgContainer.appendChild(row);
     return row;
 }
 

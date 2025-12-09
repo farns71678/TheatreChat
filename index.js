@@ -103,7 +103,7 @@ function handleModeratorConnection(socket, req) {
                             display.send(displayMsg);
                         });
 
-                        const moderatorMsg = JSON.stringify({ type: "display-msg", id: data.id });
+                        const moderatorMsg = JSON.stringify({ type: "display-msg", data });
                         moderators.forEach(moderator => {
                             moderator.socket.send(moderatorMsg);
                         })
@@ -163,6 +163,10 @@ function handleDisplayConnection(socket, req) {
 
             if (data.type === 'ping') {
                 socket.send(createPongMessage(msg.timestamp));
+            }
+            else if (data.type === 'get-messages') {
+                const reply = { type: "update-messages", data: { messages: chatMessages.filter(m => m.state === MsgState.displayed) } };
+                socket.send(JSON.stringify(reply));
             }
         }
         catch (err) {
