@@ -131,6 +131,10 @@ function handleModeratorConnection(socket, req) {
                         socket.send(JSON.stringify(reply));
                     }
                 }
+                else if (message.type === "get-messages") {
+                    const reply = { type: "update-messages", data: { messages: chatMessages } };
+                    socket.send(JSON.stringify(reply));
+                }
             }
             catch (err) {
                 console.error('Invalid message', err);

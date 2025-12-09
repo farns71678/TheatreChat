@@ -12,7 +12,7 @@ const chatmsg_post = (req, res) => {
 
         const createdMsg = { id: uuid.v4(), username: body.username, msg: body.msg, state: MsgState.pending };
         const data = { type: "chat-msg", data: createdMsg };
-        if (data.data.msg && moderators.size > 0) {
+        if (data.data.msg) {
             moderators.forEach((moderator) => {
                 if (moderator.socket && moderator.readyState === WebSocket.readyState) {
                     moderator.socket.send(JSON.stringify(data));

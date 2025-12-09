@@ -18,6 +18,7 @@ class WebSocketWithHeartbeat {
         this.ws.onopen = () => {
             console.log('Connected. Starting heartbeats...');
             this.startPingInterval();
+            this.onOpen();
         };
 
         // On message: check for Pong and reset timeout
@@ -89,6 +90,9 @@ class WebSocketWithHeartbeat {
     onMessage(message) {
         console.log('Received message:', message);
     }
+
+    // this is ment to be overriden if the user wants to
+    onOpen() {}
 
     onClose(event) {
         console.log('Disconnected. Close code:', event.code, 'Reason:', event.reason);

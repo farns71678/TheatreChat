@@ -51,7 +51,7 @@ if (purchaseButton) {
         purchaseButton.disabled = false;
 
         if (res.ok) {
-            purchaseModal.hide();
+            purchaseModal.querySelector("#purchase-modal-close-btn").click();
         }
         else {
             const data = await res.json();

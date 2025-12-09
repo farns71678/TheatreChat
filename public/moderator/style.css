@@ -41,6 +41,7 @@ svg {
     align-items: center;
 }
 
+/*
 .msg-row i,
 .purchase-row i {
     margin: 0.20em;
@@ -53,8 +54,9 @@ svg {
 .msg-row i:hover,
 .purchase-row i:hover {
     background-color: var(--bs-secondary);
-}
+}*/
 
+/*
 .trash-btn {
     color: var(--bs-warning);
 }
@@ -69,7 +71,7 @@ svg {
 
 .send-btn:hover {
     color: var(--bs-info);
-}
+}*/
 
 .purchase-username {
     color: orange;
@@ -77,4 +79,24 @@ svg {
 
 .purchase-cost {
     color: lightskyblue;
+}
+
+
+
+.icon-row {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+}
+
+.icon-row button:hover {
+    background-color: rgba(110, 145, 167, 0.449);
+}
+
+.icon-row button i {
+    color: lightgrey;
+}
+
+.icon-row button:hover i {
+    color: white;
 }

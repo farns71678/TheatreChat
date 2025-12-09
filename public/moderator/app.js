@@ -8,22 +8,21 @@ const port = urlObj.port || (urlObj.protocol === "https:" ? "443" : "80");
 const socketUrl = `ws://${domain}:${port}/ws/moderator`;
 let socket = null;
 
+const MsgState = {
+    pending: 'pending',
+    displayed: 'displayed',
+    deleted: 'deleted'
+};
+
 class ModeratorSocket extends WebSocketWithHeartbeat {
     onMessage(message) {
         if (message.type === "chat-msg") {
             const data = message.data;
             if (!data.msg) return;
-
-            const row = createElementFromHTML(`<div class='msg-row d-flex w-100 p-2 ps-3 mb-2 mt-2' data-id="${data.id}" data-msg="${encodeURIComponent(JSON.stringify(data))}"><div class='msg flex-grow-1'>${data.msg}</div><span class='icon-row'><i class="bi bi-trash-fill trash-btn"></i><i class="bi bi-send-fill send-btn"></i></span></div>`);
-            
-            row.querySelector(".trash-btn").addEventListener("click", trashMsg);
-            row.querySelector(".send-btn").addEventListener("click", sendMsg);
-
-            msgBox.appendChild(row);
+            addMsgRow(data);
         }
         else if (message.type === "purchase") {
-            let row = document.createElement('div');
-            row.innerHTML = `<div class='purchase-row w-100 p-2 ps-3 mb-2 mt-2'>
+            const row = createElementFromHTML(`<div class='purchase-row w-100 p-2 ps-3 mb-2 mt-2'>
                     <div class="d-flex w-100 align-items-center">
                         <div>
                             Purchased by: <span class="purchase-username ms-2">${message.username}</span>
@@ -32,14 +31,14 @@ class ModeratorSocket extends WebSocketWithHeartbeat {
                                 <div class='msg flex-grow-1'>${message.description}</div>
                             </div>
                         </div>
-                        <span class='icon-row ms-auto'><i class="bi bi-x-circle clear-purchase-btn"></i></span>
+                        <span class='icon-row ms-auto'><button class="btn clear-purchase-btn"><i class="bi bi-x-lg"></i></button></span>
                     </div>
-                </div>`;
+                </div>`);
             
             const clearPurchaseBtn = row.querySelector(".clear-purchase-btn");
             clearPurchaseBtn.addEventListener("click", dismissPurchase);
-            clearPurchaseBtn.addEventListener("mouseenter", clearPurchaseBtnEnter);
-            clearPurchaseBtn.addEventListener("mouseleave", clearPurchaseBtnLeave);
+            // clearPurchaseBtn.addEventListener("mouseenter", clearPurchaseBtnEnter);
+            // clearPurchaseBtn.addEventListener("mouseleave", clearPurchaseBtnLeave);
 
             purchaseBox.appendChild(row);
         }
@@ -53,6 +52,21 @@ class ModeratorSocket extends WebSocketWithHeartbeat {
         else if (message.type === "delete-msg" && message.id) {
             const msgEl = document.querySelector(`.msg-row[data-id='${message.id}'`);
             if (msgEl) msgEl.remove();
+        }
+        else if (message.type === "update-messages" && message.data) {
+            const messages = message.data.messages;
+            const pendingContainer = document.getElementById("msg-container");
+            const sentContainer = document.getElementById("sent-msg-container");
+            pendingContainer.innerHTML = "";
+            sentContainer.innerHTML = "";
+            messages.forEach(message => {
+                if (message.state === MsgState.pending) {
+                    addMsgRow(message);
+                }
+                else {
+                    // TODO: support sent message viewing
+                }
+            })
         }
     }
 
@@ -78,6 +92,10 @@ class ModeratorSocket extends WebSocketWithHeartbeat {
         // For other disconnections, reconnect
         setTimeout(() => this.connect(), 5000); // Retry after 5s
     }
+
+    onOpen() {
+        this.sendMessage(JSON.stringify({ type: "get-messages" }));
+    }
 }
 
 try {
@@ -85,6 +103,16 @@ try {
 }
 catch (err) {
     console.log(`Unable to connect to WebSocket: ${err}`);
+}
+
+function addMsgRow(data) {
+    const row = createElementFromHTML(`<div class='msg-row d-flex w-100 p-2 ps-3 mb-2 mt-2' data-id="${data.id}" data-msg="${encodeURIComponent(JSON.stringify(data))}"><div class='msg flex-grow-1'>${data.msg}</div><span class='icon-row'><button class="btn trash-btn"><i class="bi bi-trash-fill"></i></button><button class="btn send-btn"><i class="bi bi-send-fill send-btn"></i></button></span></div>`);
+
+    row.querySelector(".trash-btn").addEventListener("click", trashMsg);
+    row.querySelector(".send-btn").addEventListener("click", sendMsg);
+
+    msgBox.appendChild(row);
+    return row;
 }
 
 function trashMsg() {
