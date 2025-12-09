@@ -4,7 +4,7 @@ const cookie = require('cookie');
 const cookieParser = require('cookie-parser');
 const { sessions, authedUsers, maxSessionAge } = require('./include/session');
 const { checkUser, requireAuth, requireAdminAuth } = require('./middleware/authMiddleware');
-const { moderators, chatMessages, MsgState } = require('./include/moderator');
+const { moderators, chatMessages, MsgState, purchases, PurchaseState } = require('./include/moderator');
 const authRoutes = require('./routes/authRoutes');
 const dataRoutes = require('./routes/dataRoutes');
 const http = require('http');
@@ -135,6 +135,11 @@ function handleModeratorConnection(socket, req) {
                     const reply = { type: "update-messages", data: { messages: chatMessages } };
                     socket.send(JSON.stringify(reply));
                 }
+                else if (message.type === "get-purchases") {
+                    const reply = { type: "update-purchases", data: { purchases } };
+                    socket.send(JSON.stringify(reply));
+                }
+                // purchase handling is through POST request
             }
             catch (err) {
                 console.error('Invalid message', err);

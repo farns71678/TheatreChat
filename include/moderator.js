@@ -11,7 +11,13 @@ const MsgState = {
     deleted: 'deleted'
 };
 
+const PurchaseState = {
+    pending: 'pending',
+    purchased: 'purchased',
+    discarded: 'discarded'
+};
+
 let chatMessages = [];
 let purchases = [];
 
-module.exports = { moderators, chatMessages, MsgState, purchases };
+module.exports = { moderators, chatMessages, MsgState, purchases, PurchaseState };

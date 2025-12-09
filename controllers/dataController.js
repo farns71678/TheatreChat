@@ -1,7 +1,7 @@
 const fs = require('node:fs/promises');
 const WebSocket = require('ws');
 const uuid = require('uuid');
-const { moderators, chatMessages, MsgState } = require('../include/moderator');
+const { moderators, chatMessages, MsgState, purchases, PurchaseState } = require('../include/moderator');
 const optionsFilePath = './include/data/waystospendyourmoney.csv';
 let optionlist = null;
 
@@ -89,25 +89,109 @@ const modifyPurchaseOptions_post = async (req, res) => {
 };
 
 const purchaseItem_post = (req, res) => {
-    const purchase = req.body;
-    console.log(purchase);
+    try {
+        const purchase = req.body;
+        //console.log(purchase);
 
-    if (!purchase.username) {
-        return res.status(400).json({ error: "Username required to make purchase" });
-    }
+        if (!purchase.username) {
+            return res.status(400).json({ error: "Username required to make purchase" });
+        }
 
-    if (moderators.size > 0) {
+        const createdPurchase = { id: uuid.v4(), username: purchase.username, description: purchase.description, cost: purchase.cost, state: PurchaseState.pending };
+        purchases.push(createdPurchase);
         moderators.forEach(moderator => {
             if (moderator.socket && moderator.socket.readyState == WebSocket.OPEN) {
-                moderator.socket.send(JSON.stringify({ type: "purchase", username: purchase.username, description: purchase.description, cost: purchase.cost }));
+                moderator.socket.send(JSON.stringify({ type: "update-purchase", data: createdPurchase }));
             }
         });
         res.json({ msg: "Success" });
     }
-    else {
+    catch (error) {
+        console.log(`Error making purchase: ${error}`);
         res.status(500).json({ error: "Unable to handle purchase" });
     }
 };
+
+const confirmPurchase_post = (req, res) => {
+    try {
+        const id = req.body.id;
+
+        const purchase = purchases.find(p => p.id === id);
+        if (!id || !purchase) {
+            return res.status(400).json({ error: "Unable to find purchase" });
+        }
+
+        if (purchase.state === PurchaseState.purchased) {
+            return res.status(400).json({ error: "Transaction already completed" });
+        }
+
+        purchase.state = PurchaseState.purchased;
+        moderators.forEach(moderator => {
+            const socket = moderator.socket;
+            if (socket && socket.readyState == WebSocket.OPEN) {
+                socket.send(JSON.stringify({ type: "update-purchase", data: purchase }));
+            }
+        });
+        res.json({ msg: "Success", data: purchase });
+    }
+    catch (error) {
+        console.log(`Error confirming purchase: ${error}`);
+        res.status(500).json({ error: "Unable to handle purchase" });
+    }
+}
+
+const discardPurchase_post = (req, res) => {
+    try {
+        const id = req.body.id;
+
+        const purchase = purchases.find(p => p.id === id);
+        if (!id || !purchase) {
+            return res.status(400).json({ error: "Unable to find purchase" });
+        }
+
+        purchase.state = PurchaseState.discarded;
+        moderators.forEach(moderator => {
+            const socket = moderator.socket;
+            if (socket && socket.readyState == WebSocket.OPEN) {
+                socket.send(JSON.stringify({ type: "update-purchase", data: purchase }));
+            }
+        });
+        res.json({ msg: "Success", data: purchase });
+
+    }
+    catch (error) {
+        console.log(`Error discarding purchase: ${error}`);
+        res.status(500).json({ error: "Unable to discard purchase" });
+    }
+}
+
+const unconfirmPurchase_post = (req, res) => {
+    try {
+        const id = req.body.id;
+
+        const purchase = purchases.find(p => p.id === id);
+        if (!id || !purchase) {
+            return res.status(400).json({ error: "Unable to find purchase" });
+        }
+
+
+        if (purchase.state !== PurchaseState.pending) {
+            purchase.state = PurchaseState.pending;
+            moderators.forEach(moderator => {
+                const socket = moderator.socket;
+                if (socket && socket.readyState == WebSocket.OPEN) {
+                    socket.send(JSON.stringify({ type: "update-purchase", data: purchase }));
+                }
+            });
+        }
+        res.json({ msg: "Success", data: purchase });
+
+    }
+    catch (error) {
+        console.log(`Error discarding purchase: ${error}`);
+        res.status(500).json({ error: "Unable to discard purchase" });
+    }
+}
 
 
 async function loadMoneySpendingOptionFile() {
@@ -127,4 +211,4 @@ async function loadMoneySpendingOptionFile() {
     return optionlist;
 }
 
-module.exports = { chatmsg_post, purchaseOptions_get, modifyPurchaseOptions_post, purchaseItem_post };
+module.exports = { chatmsg_post, purchaseOptions_get, modifyPurchaseOptions_post, purchaseItem_post, confirmPurchase_post, discardPurchase_post, unconfirmPurchase_post };

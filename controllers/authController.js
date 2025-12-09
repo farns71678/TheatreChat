@@ -3,8 +3,13 @@ const uuid = require('uuid');
 
 const login_get = (req, res) => {
     try {
-        if (res.locals.session && res.locals.session.user.role == "Admin") {
-            return res.redirect("/config");
+        if (res.locals.session) {
+            if (req.query.durl === 'moderator') {
+                return res.redirect("/moderator");
+            }
+            else if (res.locals.session.user.role == "Admin") {
+                return res.redirect("/config");
+            }
         }
     }
     catch (error) {

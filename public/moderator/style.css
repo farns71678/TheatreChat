@@ -75,10 +75,12 @@ svg {
 
 .purchase-username {
     color: orange;
+    font-weight: bold;
 }
 
 .purchase-cost {
     color: lightskyblue;
+    font-weight: bold;
 }
 
 

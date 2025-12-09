@@ -14,49 +14,34 @@ const MsgState = {
     deleted: 'deleted'
 };
 
+const PurchaseState = {
+    pending: 'pending',
+    purchased: 'purchased',
+    discarded: 'discarded'
+};
+
 class ModeratorSocket extends WebSocketWithHeartbeat {
     onMessage(message) {
+        const data = message.data;
         if (message.type === "chat-msg") {
-            const data = message.data;
             if (!data.msg) return;
             addMsgRow(data);
         }
-        else if (message.type === "purchase") {
-            const row = createElementFromHTML(`<div class='purchase-row w-100 p-2 ps-3 mb-2 mt-2'>
-                    <div class="d-flex w-100 align-items-center">
-                        <div>
-                            Purchased by: <span class="purchase-username ms-2">${message.username}</span>
-                            <div class="d-flex align-items-center">
-                                <div class="purchase-cost me-2">${message.cost}</div>
-                                <div class='msg flex-grow-1'>${message.description}</div>
-                            </div>
-                        </div>
-                        <span class='icon-row ms-auto'><button class="btn clear-purchase-btn"><i class="bi bi-x-lg"></i></button></span>
-                    </div>
-                </div>`);
-            
-            const clearPurchaseBtn = row.querySelector(".clear-purchase-btn");
-            clearPurchaseBtn.addEventListener("click", dismissPurchase);
-            // clearPurchaseBtn.addEventListener("mouseenter", clearPurchaseBtnEnter);
-            // clearPurchaseBtn.addEventListener("mouseleave", clearPurchaseBtnLeave);
-
-            purchaseBox.appendChild(row);
+        else if (message.type === "purchase" && data) {
+            addPurchaseRow(data);
         }
-        else if (message.type === "display-msg" && message.data) {
-            const data = message.data;
-            if (data) {
-                const msgEl = document.querySelector(`.msg-row[data-id='${data.id}']`);
-                if (msgEl.parentNode.id === "msg-container") {
-                    msgEl.remove();
-                    addSentMsgRow(data);
-                }
+        else if (message.type === "display-msg" && data) {
+            const msgEl = document.querySelector(`.msg-row[data-id='${data.id}']`);
+            if (msgEl.parentNode.id === "msg-container") {
+                msgEl.remove();
+                addSentMsgRow(data);
             }
         }
         else if (message.type === "delete-msg" && message.id) {
             const msgEl = document.querySelector(`.msg-row[data-id='${message.id}'`);
             if (msgEl) msgEl.remove();
         }
-        else if (message.type === "update-messages" && message.data) {
+        else if (message.type === "update-messages" && data) {
             const messages = message.data.messages;
             const pendingContainer = document.getElementById("msg-container");
             const sentContainer = document.getElementById("sent-msg-container");
@@ -68,6 +53,33 @@ class ModeratorSocket extends WebSocketWithHeartbeat {
                 }
                 else {
                     addSentMsgRow(message);
+                }
+            })
+        }
+        else if (message.type === "update-purchase" && data) {
+            const purchaseEl = document.querySelector(`.purchase-row[data-id="${data.id}"]`);
+            if (purchaseEl) purchaseEl.remove();
+
+            console.log(`Updating purchase: ${JSON.stringify(data)}`);
+
+            if (data.state === PurchaseState.pending) {
+                addPurchaseRow(data);
+            }
+            else if (data.state === PurchaseState.purchased) {
+                addConfirmedPurchaseRow(data);
+            }
+        }
+        else if (message.type === "update-purchases" && data && data.purchases) {
+            const purchaseContainer = document.getElementById("purchase-container");
+            const purchasedContainer = document.getElementById("purchased-container");
+            if (purchaseContainer) purchaseContainer.innerHTML = "";
+            if (purchasedContainer) purchasedContainer.innerHTML = "";
+            data.purchases.forEach(purchase => {
+                if (purchase.state === PurchaseState.pending) {
+                    addPurchaseRow(purchase);
+                }
+                else if (purchase.state === PurchaseState.purchased) {
+                    addConfirmedPurchaseRow(purchase);
                 }
             })
         }
@@ -98,6 +110,7 @@ class ModeratorSocket extends WebSocketWithHeartbeat {
 
     onOpen() {
         this.sendMessage(JSON.stringify({ type: "get-messages" }));
+        this.sendMessage(JSON.stringify({ type: "get-purchases" }));
     }
 }
 
@@ -128,6 +141,62 @@ function addSentMsgRow(data) {
     return row;
 }
 
+function addPurchaseRow(data) {
+    const row = createElementFromHTML(`<div class='purchase-row w-100 p-2 ps-3 mb-2 mt-2' data-id="${data.id}" data-purchase="${encodeURIComponent(JSON.stringify(data))}">
+            <div class="d-flex w-100 align-items-center">
+                <div>
+                    Purchased by: <span class="purchase-username ms-2">${data.username}</span>
+                    <div class="d-flex align-items-center">
+                        <div class="purchase-cost me-2">$${data.cost}</div>
+                        <div class='msg flex-grow-1'>${data.description}</div>
+                    </div>
+                </div>
+                <span class='icon-row ms-auto'>
+                    <button class="btn confirm-purchase-btn"><i class="bi bi-bag-check"></i></button>
+                    <button class="btn clear-purchase-btn"><i class="bi bi-x-lg"></i></button>
+                </span>
+            </div>
+        </div>`);
+    
+    const clearPurchaseBtn = row.querySelector(".clear-purchase-btn");
+    clearPurchaseBtn.addEventListener("click", dismissPurchase);
+    const confirmPurchaseBtn = row.querySelector(".confirm-purchase-btn");
+    confirmPurchaseBtn.addEventListener("click", confirmPurchase);
+    // clearPurchaseBtn.addEventListener("mouseenter", clearPurchaseBtnEnter);
+    // clearPurchaseBtn.addEventListener("mouseleave", clearPurchaseBtnLeave);
+
+    purchaseBox.appendChild(row);
+}
+
+function addConfirmedPurchaseRow(data) {
+    const row = createElementFromHTML(`<div class='purchase-row w-100 p-2 ps-3 mb-2 mt-2' data-id="${data.id}" data-purchase="${encodeURIComponent(JSON.stringify(data))}">
+            <div class="d-flex w-100 align-items-center">
+                <div>
+                    Purchased by: <span class="purchase-username ms-2">${data.username}</span>
+                    <div class="d-flex align-items-center">
+                        <div class="purchase-cost me-2">$${data.cost}</div>
+                        <div class='msg flex-grow-1'>${data.description}</div>
+                    </div>
+                </div>
+                <span class='icon-row ms-auto'>
+                    <button class="btn unconfirm-purchase-btn"><i class="bi bi-bag-x"></i></button>
+                    <button class="btn clear-purchase-btn"><i class="bi bi-x-lg"></i></button>
+                </span>
+            </div>
+        </div>`);
+    
+    const clearPurchaseBtn = row.querySelector(".clear-purchase-btn");
+    clearPurchaseBtn.addEventListener("click", dismissPurchase);
+    const unconfirmPurchaseBtn = row.querySelector(".unconfirm-purchase-btn");
+    unconfirmPurchaseBtn.addEventListener("click", unconfirmPurchase);
+
+    // clearPurchaseBtn.addEventListener("mouseenter", clearPurchaseBtnEnter);
+    // clearPurchaseBtn.addEventListener("mouseleave", clearPurchaseBtnLeave);
+
+    const purchasedContainer = document.getElementById("purchased-container");
+    purchasedContainer.appendChild(row);
+}
+
 function trashMsg() {
     const row = this.closest(".msg-row");
     // row.remove();
@@ -140,9 +209,59 @@ function trashMsg() {
     }
 }
 
-function dismissPurchase() {
+async function dismissPurchase() {
     const row = this.closest(".purchase-row");
-    row.remove();
+    const id = row.getAttribute('data-id');
+    // even though the request is not made through the web socket, the connection should still be open for updates & authentication
+    if (socket && socket.getState() === WebSocket.OPEN) {
+        fetch('/discardpurchase', {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json; charset=UTF-8'
+            },
+            body: JSON.stringify({ id })
+        });
+    }
+    else {
+        console.log("Unable to discard purchase, socket is closed");
+    }
+    // row.remove();
+}
+
+async function confirmPurchase() {
+    const row = this.closest(".purchase-row");
+    const id = row.getAttribute('data-id');
+    // even though the request is not made through the web socket, the connection should still be open for updates & authentication
+    if (socket && socket.getState() === WebSocket.OPEN) {
+        fetch('/confirmpurchase', {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json; charset=UTF-8'
+            },
+            body: JSON.stringify({ id })
+        });
+    }
+    else {
+        console.log("Unable to confirm purchase, socket is closed");
+    }
+}
+
+async function unconfirmPurchase() {
+    const row = this.closest(".purchase-row");
+    const id = row.getAttribute('data-id');
+    // even though the request is not made through the web socket, the connection should still be open for updates & authentication
+    if (socket && socket.getState() === WebSocket.OPEN) {
+        fetch('/unconfirmpurchase', {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json; charset=UTF-8'
+            },
+            body: JSON.stringify({ id })
+        });
+    }
+    else {
+        console.log("Unable to unconfirm purchase, socket is closed");
+    }
 }
 
 function clearPurchaseBtnEnter() {
