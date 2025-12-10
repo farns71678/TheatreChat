@@ -1,6 +1,7 @@
 const fs = require('node:fs/promises');
 const WebSocket = require('ws');
 const uuid = require('uuid');
+const { logPurchase } = require('../include/log');
 const { moderators, chatMessages, MsgState, purchases, PurchaseState } = require('../include/moderator');
 const optionsFilePath = './include/data/waystospendyourmoney.csv';
 let optionlist = null;
@@ -126,6 +127,7 @@ const confirmPurchase_post = (req, res) => {
         }
 
         purchase.state = PurchaseState.purchased;
+        logPurchase("confirm-purchase", purchase);
         moderators.forEach(moderator => {
             const socket = moderator.socket;
             if (socket && socket.readyState == WebSocket.OPEN) {
@@ -150,6 +152,7 @@ const discardPurchase_post = (req, res) => {
         }
 
         purchase.state = PurchaseState.discarded;
+        logPurchase("discard-purchase", purchase);
         moderators.forEach(moderator => {
             const socket = moderator.socket;
             if (socket && socket.readyState == WebSocket.OPEN) {
@@ -177,6 +180,7 @@ const unconfirmPurchase_post = (req, res) => {
 
         if (purchase.state !== PurchaseState.pending) {
             purchase.state = PurchaseState.pending;
+            logPurchase("unconfirm-purchase", purchase);
             moderators.forEach(moderator => {
                 const socket = moderator.socket;
                 if (socket && socket.readyState == WebSocket.OPEN) {

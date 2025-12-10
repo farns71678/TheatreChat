@@ -94,6 +94,7 @@ svg {
 
 .btn.bx-svg-btn {
     padding: var(--bs-btn-padding-y);
+    color: lightgray;
 }
 
 .hidden {

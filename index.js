@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const { sessions, authedUsers, maxSessionAge } = require('./include/session');
 const { checkUser, requireAuth, requireAdminAuth } = require('./middleware/authMiddleware');
 const { moderators, chatMessages, MsgState, purchases, PurchaseState } = require('./include/moderator');
+const { logMessage } = require("./include/log");
 const authRoutes = require('./routes/authRoutes');
 const dataRoutes = require('./routes/dataRoutes');
 const http = require('http');
@@ -102,6 +103,7 @@ function handleModeratorConnection(socket, req) {
                     const storedMsg = chatMessages.find(m => m.id === data.id);
                     if (storedMsg && storedMsg.state === MsgState.pending) {
                         storedMsg.state = MsgState.displayed;
+                        logMessage("display-msg", storedMsg);
                         const displayMsg = JSON.stringify({ type: "display-msg", data: storedMsg });
                         displays.forEach((display) => {
                             display.send(displayMsg);
