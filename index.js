@@ -34,6 +34,10 @@ app.get('/moderator', checkUser, requireAuth, (req, res) => {
     res.render('moderator');
 });
 
+app.get('/display', (req, res) => {
+    res.render('display');
+})
+
 // routes
 app.use(authRoutes);
 app.use(dataRoutes);
