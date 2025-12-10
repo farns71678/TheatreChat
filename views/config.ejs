@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Theatre Chat Config Menu</title>
 
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
@@ -13,37 +14,15 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/lib/qrcode.min.js"></script>
 </head>
 <body class="container p-2 pt-3">
     <h1 class="mb-3">Theatre Chat Application Config Menu</h1>
 
     <h2>Purchase Options</h2>
-    <div id="purchase-items">
-        <!--<div class="purchase-item d-flex w-100 p-2 align-items-center rounded-1 ps-3 mb-1">
-            <div class="purchase-content">
-                $<span class="purchase-cost me-2">2</span> 
-                Description: <span class="purchase-description ms-1">Chew a piece of gum</span> 
-            </div>
-            <span class="icon-row hidden">
-                <button class="btn purchase-icon-btn rounded-1"><i class="bi bi-pencil-square"></i></button>
-                <button class="btn purchase-icon-btn rounded-1"><i class="bi bi-trash-fill"></i></button>
-            </span>
-            <span class="icon-row revert-icon">
-                <button class="btn purchase-icon-btn rounded-1"><i class="bi bi-arrow-counterclockwise"></i></button>
-            </span>
-        </div>
-        <div class="purchase-item d-flex w-100 p-2 align-items-center rounded-1 ps-3 mb-1">
-            <div class="purchase-content">
-                $<span class="purchase-cost me-2">2</span> 
-                Description: <span class="purchase-description ms-1">Chew a piece of gum</span> 
-            </div>
-            <span class="icon-row">
-                <button class="btn purchase-icon-btn rounded-1"><i class="bi bi-pencil-square"></i></button>
-                <button class="btn purchase-icon-btn rounded-1"><i class="bi bi-trash-fill"></i></button>
-            </span>
-        </div>-->
-        
-    </div>
+    <div id="purchase-items"></div>
+
     <div id="create-purchase-form" class="purchase-item d-flex w-100 p-2 align-items-center rounded-1 ps-3">
         <div class="purchase-content">
             $<input id="purchase-cost-input" type="number" class="purchase-cost me-2 ms-1 form-control" value="" min="0" placeholder="Price">
@@ -62,10 +41,33 @@
     </div>
 
     <h2>Page Links</h2>
-    <p><strong>Client Page: </strong><a href="/client" target="_blank">http://localhost:3000/client</a></p>
+    <div id="page-links-container"></div>
+    <!--<p><strong>Client Page: </strong><a href="/client" target="_blank">http://localhost:3000/client</a><button class="btn qr-code-btn" data-url="http://localhost:3000/client" data-page="client"><i class="bi bi-qr-code"></i></button></p>
     <p><strong>Display Page: </strong><a href="/display" target="_blank">http://localhost:3000/display</a></p>
     <p><strong>Moderator Page: </strong><a href="/moderator" target="_blank">http://localhost:3000/moderator</a></p>
-    <p><strong>Config Page: </strong><a href="/config" target="_blank">http://localhost:3000/config</a></p>
+    <p><strong>Config Page: </strong><a href="/config" target="_blank">http://localhost:3000/config</a></p>-->
+
+    <div style="height: 5em;"></div>
+
+    
+    <!--qr code modal-->
+    <div class="modal fade" id="qr-code-modal" tabindex="-1" aria-labelledby="qr-code-modal-label" aria-hidden="true" data-item-cost="" data-item-description="">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="qr-code-modal-label">QR Code</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="qr-code-container"></div>
+                </div>
+                <div class="modal-footer">
+                    <button id="qr-code-save-btn" type="button" class="btn btn-primary">Save File</button>
+                    <button id="qr-code-modal-close-btn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="/config/app.js"></script>
 </body>

@@ -12,7 +12,60 @@ const ButtonState = {
     Loading: 2
 };
 
-loadPurchaseOptions();
+const downloadFile = (filename, content, type = "text/plain") => {
+    const element = document.createElement('a');
+    const file = new Blob([content], { type: type });
+    element.href = URL.createObjectURL(file);
+    element.download = filename;
+    document.body.appendChild(element);
+    element.click();
+    element.remove();
+}
+
+// if page links need to be absolute, set urlType to "absolute"
+const pages = [
+    { name: "Moderator", url: "/moderator", icon: "bi-shield-lock-fill" },
+    { name: "Confi", url: "/config", icon: "bi-gear-fill" },
+    { name: "Client", url: "/client", icon: "bi-person-fill" },
+    { name: "Display", url: "/display", icon: "bi-tv-fill"}
+];
+
+try {
+    loadPurchaseOptions();
+
+    loadPages();
+
+    const qrCodeBtns = document.querySelectorAll(".qr-code-btn");
+    qrCodeBtns.forEach(btn => {
+        btn.addEventListener("click", function () {
+            const url = this.getAttribute("data-url");
+            const page = this.getAttribute("data-page");
+            const qrCodeModal = new bootstrap.Modal(document.getElementById("qr-code-modal"));
+            document.getElementById("qr-code-modal-label").innerHTML = `QR Code for <span style="color: lightskyblue">${page}</span>`;
+            const qrCodeContainer = document.getElementById("qr-code-container");
+            qrCodeContainer.innerHTML = "";
+            const qrCode = new QRCode({
+                content: url,
+                container: "svg-viewbox",
+                padding: 2,
+                join: true
+            });
+            const svg = qrCode.svg();
+            qrCodeContainer.innerHTML = svg;
+
+            const saveBtn = document.getElementById("qr-code-save-btn");
+            $(saveBtn).off("click");
+            saveBtn.addEventListener("click", () => {
+                downloadFile(`theatrechat-qrcode-${page}.svg`, qrCodeContainer.innerHTML, "image/svg+xml");
+            });
+
+            qrCodeModal.show();
+        });
+    })
+}
+catch (error) {
+    console.log(`Error on page load: ${error}`);
+}
 
 clearPurchaseBtn.addEventListener("click", clearPurchaseInput);
 
@@ -129,6 +182,25 @@ async function loadPurchaseOptions() {
         createErr.innerText = "Unable to load purchase options. Try reloading. ";
         setBtnState(purchaseSaveBtn, "Loading", ButtonState.Disabled);
     }
+}
+
+function loadPages() {
+    const container = document.getElementById("page-links-container");
+    const currentUrl = window.location.href;
+    const urlObj = new URL(currentUrl);
+    const domain = urlObj.hostname;
+    const port = urlObj.port || (urlObj.protocol === "https:" ? "443" : "80");
+    pages.forEach(page => {
+        let url = page.url;
+        if (page.urlType !== "absolute") {
+            url = `${urlObj.protocol}//${domain}:${port}${page.url}`;
+        }
+        const pageEl = createElementFromHTML(`<p><i class="bi ${page.icon} me-2" style="color: orange;"></i><strong>${page.name} Page: </strong><a href="${url}" target="_blank">${url}</a>
+            <span class="icon-row" style="display: inline;"><button class="btn qr-code-btn bx-svg-btn ms-2" data-url="${url}" data-page="${page.name.toLowerCase()}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: white;transform: ;msFilter:;"><path d="M3 11h8V3H3zm2-6h4v4H5zM3 21h8v-8H3zm2-6h4v4H5zm8-12v8h8V3zm6 6h-4V5h4zm-5.99 4h2v2h-2zm2 2h2v2h-2zm-2 2h2v2h-2zm4 0h2v2h-2zm2 2h2v2h-2zm-4 0h2v2h-2zm2-6h2v2h-2zm2 2h2v2h-2z"></path></svg>
+            </button></span></p>`);
+        container.appendChild(pageEl);
+    });
 }
 
 function clearPurchaseInput() {

@@ -92,6 +92,10 @@ svg {
     align-items: center;
 }
 
+.btn.bx-svg-btn {
+    padding: var(--bs-btn-padding-y);
+}
+
 .hidden {
     display: none !important;
 }
