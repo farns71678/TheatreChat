@@ -102,3 +102,11 @@ svg {
 .icon-row button:hover i {
     color: white;
 }
+
+.nav-link.active .badge {
+    background-color: var(--badge-active-bg) !important;
+}
+
+.hidden {
+    display: none !important;
+}

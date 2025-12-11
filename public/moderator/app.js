@@ -33,13 +33,17 @@ class ModeratorSocket extends WebSocketWithHeartbeat {
         else if (message.type === "display-msg" && data) {
             const msgEl = document.querySelector(`.msg-row[data-id='${data.id}']`);
             if (msgEl.parentNode.id === "msg-container") {
+                updateBadgeCount("#chat-tab", -1);
                 msgEl.remove();
                 addSentMsgRow(data);
             }
         }
         else if (message.type === "delete-msg" && message.id) {
             const msgEl = document.querySelector(`.msg-row[data-id='${message.id}'`);
-            if (msgEl) msgEl.remove();
+            if (msgEl) {
+                updateBadgeCount(msgEl.parentNode.id === "msg-container" ? "#chat-tab" : "#sent-chat-tab", -1);
+                msgEl.remove();
+            }
         }
         else if (message.type === "update-messages" && data) {
             const messages = message.data.messages;
@@ -47,18 +51,23 @@ class ModeratorSocket extends WebSocketWithHeartbeat {
             const sentContainer = document.getElementById("sent-msg-container");
             pendingContainer.innerHTML = "";
             sentContainer.innerHTML = "";
+            resetBadgeCount("#chat-tab");
+            resetBadgeCount("#sent-chat-tab");
             messages.forEach(message => {
                 if (message.state === MsgState.pending) {
                     addMsgRow(message);
                 }
-                else {
+                else if (message.state === MsgState.displayed){
                     addSentMsgRow(message);
                 }
-            })
+            });
         }
         else if (message.type === "update-purchase" && data) {
             const purchaseEl = document.querySelector(`.purchase-row[data-id="${data.id}"]`);
-            if (purchaseEl) purchaseEl.remove();
+            if (purchaseEl) {
+                updateBadgeCount(purchaseEl.parentNode.id === "purchase-container" ? "#purchase-tab" : "#purchased-tab", -1);
+                purchaseEl.remove();
+            }
 
             console.log(`Updating purchase: ${JSON.stringify(data)}`);
 
@@ -74,6 +83,8 @@ class ModeratorSocket extends WebSocketWithHeartbeat {
             const purchasedContainer = document.getElementById("purchased-container");
             if (purchaseContainer) purchaseContainer.innerHTML = "";
             if (purchasedContainer) purchasedContainer.innerHTML = "";
+            resetBadgeCount("#purchase-tab");
+            resetBadgeCount("#purchased-tab");
             data.purchases.forEach(purchase => {
                 if (purchase.state === PurchaseState.pending) {
                     addPurchaseRow(purchase);
@@ -128,6 +139,7 @@ function addMsgRow(data) {
     row.querySelector(".send-btn").addEventListener("click", sendMsg);
 
     msgBox.appendChild(row);
+    updateBadgeCount("#chat-tab", 1);
     return row;
 }
 
@@ -138,6 +150,7 @@ function addSentMsgRow(data) {
     row.querySelector(".trash-btn").addEventListener("click", trashMsg);
 
     sentMsgContainer.appendChild(row);
+    updateBadgeCount("#sent-chat-tab", 1);
     return row;
 }
 
@@ -152,7 +165,7 @@ function addPurchaseRow(data) {
                     </div>
                 </div>
                 <span class='icon-row ms-auto'>
-                    <button class="btn confirm-purchase-btn"><i class="bi bi-bag-check"></i></button>
+                    <button class="btn confirm-purchase-btn"><i class="bi bi-bag-check-fill"></i></button>
                     <button class="btn clear-purchase-btn"><i class="bi bi-x-lg"></i></button>
                 </span>
             </div>
@@ -164,7 +177,7 @@ function addPurchaseRow(data) {
     confirmPurchaseBtn.addEventListener("click", confirmPurchase);
     // clearPurchaseBtn.addEventListener("mouseenter", clearPurchaseBtnEnter);
     // clearPurchaseBtn.addEventListener("mouseleave", clearPurchaseBtnLeave);
-
+    updateBadgeCount("#purchase-tab", 1);
     purchaseBox.appendChild(row);
 }
 
@@ -179,7 +192,7 @@ function addConfirmedPurchaseRow(data) {
                     </div>
                 </div>
                 <span class='icon-row ms-auto'>
-                    <button class="btn unconfirm-purchase-btn"><i class="bi bi-bag-x"></i></button>
+                    <button class="btn unconfirm-purchase-btn"><i class="bi bi-bag-x-fill"></i></button>
                     <button class="btn clear-purchase-btn"><i class="bi bi-x-lg"></i></button>
                 </span>
             </div>
@@ -193,8 +206,27 @@ function addConfirmedPurchaseRow(data) {
     // clearPurchaseBtn.addEventListener("mouseenter", clearPurchaseBtnEnter);
     // clearPurchaseBtn.addEventListener("mouseleave", clearPurchaseBtnLeave);
 
+    updateBadgeCount("#purchased-tab", 1);
     const purchasedContainer = document.getElementById("purchased-container");
     purchasedContainer.appendChild(row);
+}
+
+function updateBadgeCount(tabId, increment) {
+    const tabBadge = document.querySelector(`${tabId} .badge`);
+    tabBadge.classList.remove("hidden");
+    const count = parseInt(tabBadge.textContent || "0") + increment;
+    if (isNaN(count) || count <= 0) {
+        resetBadgeCount(tabId);
+    }
+    else {
+        tabBadge.textContent = count;
+    }
+}
+
+function resetBadgeCount(tabId) {
+    const tabBadge = document.querySelector(`${tabId} .badge`);
+    tabBadge.classList.add("hidden");
+    tabBadge.textContent = "0";
 }
 
 function trashMsg() {

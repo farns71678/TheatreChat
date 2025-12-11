@@ -22,22 +22,30 @@
     <h1>Moderator Page</h1>
 
 
-    <ul class="nav nav-pills" id="moderator-tabs" role="tablist">
+    <ul class="nav nav-pills" id="moderator-tabs" role="tablist" style="--bs-nav-pills-link-active-bg: var(--bs-tertiary-bg); --badge-active-bg: var(--bs-danger);">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat-tab-pane"
-                type="button" role="tab" aria-controls="chat-tab-pane" aria-selected="true">Chat</button>
+                type="button" role="tab" aria-controls="chat-tab-pane" aria-selected="true">
+                Chat <span class="ms-1 rounded-pills badge text-bg-secondary hidden">0</span>
+            </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="purchase-tab" data-bs-toggle="tab" data-bs-target="#purchase-tab-pane"
-                type="button" role="tab" aria-controls="purchase-tab-pane" aria-selected="true">Purchases</button>
+                type="button" role="tab" aria-controls="purchase-tab-pane" aria-selected="true">
+                Purchases <span class="ms-1 rounded-pills badge text-bg-secondary hidden">0</span>
+            </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="sent-chat-tab" data-bs-toggle="tab" data-bs-target="#sent-chat-tab-pane"
-                type="button" role="tab" aria-controls="sent-chat-tab-pane" aria-selected="true">Sent Messages</button>
+                type="button" role="tab" aria-controls="sent-chat-tab-pane" aria-selected="true">
+                Sent Messages <span class="ms-1 rounded-pills badge text-bg-secondary hidden">0</span>
+            </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="purchased-tab" data-bs-toggle="tab" data-bs-target="#purchased-tab-pane"
-                type="button" role="tab" aria-controls="purchased-tab-pane" aria-selected="true">Items Purchased</button>
+                type="button" role="tab" aria-controls="purchased-tab-pane" aria-selected="true">
+                Items Purchased <span class="ms-1 rounded-pills badge text-bg-secondary hidden">0</span>
+            </button>
         </li>
 
     </ul>
