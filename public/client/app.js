@@ -8,11 +8,13 @@ chatForm.addEventListener("submit", (event) => {
     sendChatMsg();
 });
 
-const purchaseModal = document.getElementById('purchase-modal')
+initUsernameModal();
+
+const purchaseModal = document.getElementById('purchase-modal');
 if (purchaseModal) {
     purchaseModal.addEventListener('show.bs.modal', event => {
         // Button that triggered the modal
-        const button = event.relatedTarget
+        const button = event.relatedTarget;
         const description = button.getAttribute('data-bs-description');
         const cost = button.getAttribute('data-bs-cost');
 
@@ -49,12 +51,24 @@ if (purchaseButton) {
         });
 
         purchaseButton.disabled = false;
+        const data = await res.json();
 
         if (res.ok) {
             purchaseModal.querySelector("#purchase-modal-close-btn").click();
+            const purchase = data.purchase;
+            if (purchase) {
+                const purchasedContainer = document.getElementById("purchased-container");
+                purchasedContainer.appendChild(createElementFromHTML(`<div class="purchase-row w-100 p-2 ps-3 mb-2 mt-2" data-id="${purchase.id}" data-purchase="${encodeURIComponent(JSON.stringify(purchase))}">
+                    <div class="d-flex">
+                        <div class="d-flex align-items-center">
+                            <div class="purchase-cost me-2">$${purchase.cost}</div>
+                            <div class='msg flex-grow-1'>${purchase.description}</div>
+                        </div>
+                    </div>
+                </div>`));
+            }
         }
         else {
-            const data = await res.json();
             purchaseErr.innerText = data.error || "Sorry, we couldn't process the purchase";
         }
 
@@ -65,9 +79,16 @@ function sendChatMsg() {
     try {
         const msgBox = document.getElementById("chat-input");
         const usernameInput = document.getElementById("username-input");
+        const errorBox = document.getElementById("form-err");
         let msg = msgBox.value.trim();
         let username = usernameInput.value.trim();
         if (msg == '') return;
+
+        errorBox.innerText = "";
+        if (!username) {
+            errorBox.innerText = "Username required";
+            return;
+        }
 
         // if (socket && socket.readyState === WebSocket.OPEN) {
         //     socket.send(JSON.stringify({ username, msg }));
@@ -117,6 +138,39 @@ async function loadOptions() {
     catch (err) {
         console.log(`Couldn't get option files: ${err}`);
     }
+}
+
+function initUsernameModal() {
+    const usernameModal = new bootstrap.Modal("#username-modal");
+    const usernameSubmit = document.getElementById("confirm-username-btn");
+    const usernameModalInput = document.getElementById("username-modal-input");
+    usernameSubmit.addEventListener("click", () => {
+        const usernameErr = document.getElementById("username-modal-err");
+        const username = usernameModalInput.value.trim();
+
+        usernameErr.innerText = "";
+        if (!username) {
+            usernameErr.innerText = "Username required";
+            return;
+        }
+
+        const usernameInput = document.getElementById("username-input");
+        usernameInput.value = username;
+        usernameModal.hide();
+    });
+
+    const usernameModalForm = document.getElementById("username-modal-form");
+    usernameModalForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        usernameSubmit.click();
+    });
+
+    const usernameModalEl = document.getElementById("username-modal");
+    usernameModalEl.addEventListener("shown.bs.modal", () => {
+        usernameModalInput.focus();
+    });
+
+    usernameModal.show();
 }
 
 function createElementFromHTML(htmlString) {

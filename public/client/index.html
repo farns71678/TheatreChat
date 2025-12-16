@@ -18,29 +18,23 @@
 
 <body class="container p-3 d-flex flex-column">
     <div class="d-flex align-items-center">
-        <h1 class="flex-grow-1">Client App</h1>
-        <input type="text" class="form-control w-50 w-lg-25" placeholder="Username" aria-label="Username" id="username-input">
+        <h1 class="flex-grow-1 mb-0">Client App</h1>
+        <input type="text" class="form-control w-50 w-lg-25 text-end" placeholder="Username" aria-label="Username" id="username-input">
     </div>
-    <!-- <div class="input-group mb-3" id="username-input-group">
-        <span class="input-group-text">Username</span>
-        <input type="text" class="form-control" placeholder="Username" aria-label="Username" id="username-input">
-    </div> -->
-
-    
-    <!-- <div id="form-container" class="input-group">
-        <input type="text" name="chat" id="chat-input" class="form-control flex-grow-1 m-1 w-100" placeholder="Messages">
-        <button id="chat-submit" class="form-control m-1 flex-shrink-1">Send</button>
-    </div> -->
 
 
-    <ul class="nav nav-pills mt-3 mb-2" id="moderator-tabs" role="tablist" style="--bs-nav-pills-link-active-bg: var(--bs-tertiary-bg);">
+    <ul class="nav nav-pills mt-3 mb-2 d-flex justify-content-center" id="moderator-tabs" role="tablist" style="--bs-nav-pills-link-active-bg: var(--bs-tertiary-bg);">
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat-tab-pane"
                 type="button" role="tab" aria-controls="chat-tab-pane" aria-selected="true">Chat</button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="purchase-tab" data-bs-toggle="tab" data-bs-target="#purchase-tab-pane"
-                type="button" role="tab" aria-controls="purchase-tab-pane" aria-selected="true">Purchases</button>
+                type="button" role="tab" aria-controls="purchase-tab-pane" aria-selected="true">Purchase Options</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="purchased-tab" data-bs-toggle="tab" data-bs-target="#purchased-tab-pane"
+                type="button" role="tab" aria-controls="purchased-tab-pane" aria-selected="true">Purchases</button>
         </li>
 
     </ul>
@@ -60,6 +54,12 @@
                 
             </div>
         </div>
+        <div class="tab-pane show" id="purchased-tab-pane" role="tabpanel" aria-labelledby="purchased-tab" tabindex="0">
+            <div id="purchased-container" class="overflow-auto">
+                <h2>Your Purchases</h2>
+                <div id="purchased-container" class="overflow-auto"></div>
+            </div>
+        </div>
     </div>
 
     <form id="chat-form">
@@ -74,7 +74,7 @@
                 </svg>
             </button>
         </div>
-        <div id="form-err"></div>
+        <div id="form-err" class="err"></div>
     </form>
 
     <!--purchase modal-->
@@ -92,6 +92,31 @@
                 <div class="modal-footer">
                     <button id="purchase-modal-close-btn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button id="confirm-purchase-btn" type="button" class="btn btn-primary">Purchase</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--purchase modal-->
+    <div class="modal fade" id="username-modal" tabindex="-2"  data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="username-modal-label" >
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="username-modal-label">Create Username</h1>
+                    <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex flex-column p-2">
+                        <form id="username-modal-form">
+                            <input type="text" name="username" id="username-modal-input" class="form-control" placeholder="Username">
+                        </form>
+                        <p id="username-modal-err" class="err mb-1 mt-1"></p>
+                        <p class="w-100 text-center mt-1 mb-0" style="color: var(--bs-secondary-color);">A username is required for making purchases or sending chat messages. </p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <!-- <button id="username-modal-close-btn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button> -->
+                    <button id="confirm-username-btn" type="button" class="btn btn-primary">Confirm</button>
                 </div>
             </div>
         </div>

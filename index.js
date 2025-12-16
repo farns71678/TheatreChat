@@ -2,9 +2,9 @@ const uuid = require('uuid');
 const WebSocket = require('ws');
 const cookie = require('cookie');
 const cookieParser = require('cookie-parser');
-const { sessions, authedUsers, maxSessionAge } = require('./include/session');
+const { sessions, maxSessionAge } = require('./include/session');
 const { checkUser, requireAuth, requireAdminAuth } = require('./middleware/authMiddleware');
-const { moderators, chatMessages, MsgState, purchases, PurchaseState } = require('./include/moderator');
+const { moderators, Display, chatMessages, MsgState, purchases, flaggedUsernames, updateState } = require('./include/moderator');
 const { logMessage } = require("./include/log");
 const authRoutes = require('./routes/authRoutes');
 const dataRoutes = require('./routes/dataRoutes');
@@ -12,7 +12,6 @@ const http = require('http');
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
-let displays = new Map();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -21,7 +20,6 @@ app.use(express.static(__dirname + "/public"));
 app.set('view engine', 'ejs');
 
 
-// big TODO: handle chat and purchase state on server
 
 app.get('/', (req, res) => {
     res.redirect('/client');
@@ -90,6 +88,7 @@ function handleModeratorConnection(socket, req) {
         const moderatorId = uuid.v4();
         const moderator = { id: moderatorId, socket };
         moderators.set(moderatorId, moderator);
+        console.log(`Moderator socket ${ moderator.id } connected`);
 
         socket.on('message', (msg) => {
             try {
@@ -102,12 +101,10 @@ function handleModeratorConnection(socket, req) {
                 else if (message.type === 'display-msg' && data.id) {
                     const storedMsg = chatMessages.find(m => m.id === data.id);
                     if (storedMsg && storedMsg.state === MsgState.pending) {
-                        storedMsg.state = MsgState.displayed;
+                        updateState(storedMsg, MsgState.displayed);
                         logMessage("display-msg", storedMsg);
                         const displayMsg = JSON.stringify({ type: "display-msg", data: storedMsg });
-                        displays.forEach((display) => {
-                            display.send(displayMsg);
-                        });
+                        Display.broadcastMessage(displayMsg);
 
                         const moderatorMsg = JSON.stringify({ type: "display-msg", data });
                         moderators.forEach(moderator => {
@@ -118,11 +115,14 @@ function handleModeratorConnection(socket, req) {
                 else if (message.type === 'delete-msg' && message.id) {
                     const storedMsg = chatMessages.find(m => m.id === message.id);
                     if (storedMsg) {
-                        storedMsg.state = MsgState.deleted;
+                        updateState(storedMsg, MsgState.deleted);
+                        const username = storedMsg.username;
+                        if (!flaggedUsernames.includes(username)) {
+                            flaggedUsernames.push(username);
+                        }
+
                         const displayMsg = JSON.stringify({ type: "delete-msg", id: message.id });
-                        displays.forEach((display) => {
-                            display.send(displayMsg);
-                        });
+                        Display.broadcastMessage(displayMsg);
 
                         const moderatorMsg = JSON.stringify({ type: "delete-msg", id: message.id });
                         moderators.forEach(moderator => {
@@ -186,9 +186,9 @@ function handleDisplayConnection(socket, req) {
     })
 
     socket.on("close", () => {
-        displays.delete(clientId);
+        Display.displays.delete(clientId);
     });
-    displays.set(clientId, socket);
+    Display.displays.set(clientId, socket);
 }
 
 

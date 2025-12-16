@@ -67,3 +67,8 @@ svg {
 .send-btn:hover {
     color: var(--bs-info);
 }
+
+.msg-username {
+    font-weight: bold;
+    color: orange;
+}

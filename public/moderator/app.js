@@ -132,8 +132,17 @@ catch (err) {
     console.log(`Unable to connect to WebSocket: ${err}`);
 }
 
+// TODO: add right click for unflagging user, sending and deleting messages, etc. 
+// TODO: add tooltips
 function addMsgRow(data) {
-    const row = createElementFromHTML(`<div class='msg-row d-flex w-100 p-2 ps-3 mb-2 mt-2' data-id="${data.id}" data-msg="${encodeURIComponent(JSON.stringify(data))}"><div class='msg flex-grow-1'>${data.msg}</div><span class='icon-row'><button class="btn trash-btn"><i class="bi bi-trash-fill"></i></button><button class="btn send-btn"><i class="bi bi-send-fill send-btn"></i></button></span></div>`);
+    const row = createElementFromHTML(`<div class='msg-row d-flex w-100 p-2 ps-3 mb-2 mt-2 ${ data.flagged ? "flagged" : "" }' data-id="${data.id}" data-msg="${encodeURIComponent(JSON.stringify(data))}">
+            <i class="bi bi-flag-fill msg-flag me-2"></i>
+            <div class='msg flex-grow-1'><span class="msg-username">${data.username}</span>: ${data.msg}</div>
+            <span class='icon-row'>
+                <button class="btn trash-btn"><i class="bi bi-trash-fill"></i></button>
+                <button class="btn send-btn"><i class="bi bi-send-fill send-btn"></i></button>
+            </span>
+        </div>`);
 
     row.querySelector(".trash-btn").addEventListener("click", trashMsg);
     row.querySelector(".send-btn").addEventListener("click", sendMsg);
@@ -145,7 +154,12 @@ function addMsgRow(data) {
 
 function addSentMsgRow(data) {
     const sentMsgContainer = document.getElementById("sent-msg-container");
-    const row = createElementFromHTML(`<div class='msg-row d-flex w-100 p-2 ps-3 mb-2 mt-2' data-id="${data.id}" data-msg="${encodeURIComponent(JSON.stringify(data))}"><div class='msg flex-grow-1'>${data.msg}</div><span class='icon-row'><button class="btn trash-btn"><i class="bi bi-trash-fill"></i></button></span></div>`);
+    const row = createElementFromHTML(`<div class='msg-row d-flex w-100 p-2 ps-3 mb-2 mt-2' data-id="${data.id}" data-msg="${encodeURIComponent(JSON.stringify(data))}">
+            <div class='msg flex-grow-1'><span class="msg-username">${data.username}</span>: ${data.msg}</div>
+            <span class='icon-row'>
+                <button class="btn trash-btn"><i class="bi bi-trash-fill"></i></button>
+            </span>
+        </div>`);
     
     row.querySelector(".trash-btn").addEventListener("click", trashMsg);
 

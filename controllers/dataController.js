@@ -2,7 +2,8 @@ const fs = require('node:fs/promises');
 const WebSocket = require('ws');
 const uuid = require('uuid');
 const { logPurchase } = require('../include/log');
-const { moderators, chatMessages, MsgState, purchases, PurchaseState } = require('../include/moderator');
+const { moderators, Display, chatMessages, MsgState, purchases, PurchaseState, flaggedUsernames, updateState } = require('../include/moderator');
+const { time } = require('node:console');
 const optionsFilePath = './include/data/waystospendyourmoney.csv';
 let optionlist = null;
 
@@ -11,12 +12,25 @@ const chatmsg_post = (req, res) => {
         const body = req.body;
         console.log(body);
 
-        const createdMsg = { id: uuid.v4(), username: body.username, msg: body.msg, state: MsgState.pending };
-        const data = { type: "chat-msg", data: createdMsg };
-        if (data.data.msg) {
+        const timestamp = Date.now();
+        const createdMsg = { 
+            id: uuid.v4(),
+            username: body.username, 
+            msg: body.msg, 
+            state: MsgState.pending, 
+            created_timestamp: timestamp, 
+            updated_timestamp: timestamp 
+        };
+        const message = { type: "chat-msg", data: createdMsg };
+        const flagged = flaggedUsernames.includes(createdMsg.username);
+        if (flagged) {
+            message.data.flagged = true;
+        }
+
+        if (message.data.msg) {
             moderators.forEach((moderator) => {
                 if (moderator.socket && moderator.readyState === WebSocket.readyState) {
-                    moderator.socket.send(JSON.stringify(data));
+                    moderator.socket.send(JSON.stringify(message));
                 }
             });
             chatMessages.push(createdMsg);
@@ -98,14 +112,27 @@ const purchaseItem_post = (req, res) => {
             return res.status(400).json({ error: "Username required to make purchase" });
         }
 
-        const createdPurchase = { id: uuid.v4(), username: purchase.username, description: purchase.description, cost: purchase.cost, state: PurchaseState.pending };
+        const timestamp = Date.now();
+        const createdPurchase = { 
+            id: uuid.v4(), 
+            username: purchase.username, 
+            description: purchase.description, 
+            cost: purchase.cost, 
+            state: PurchaseState.pending, 
+            created_timestamp: timestamp, 
+            updated_timestamp: timestamp 
+        };
         purchases.push(createdPurchase);
+        const updateMsg = JSON.stringify({ type: "update-purchase", data: createdPurchase });
         moderators.forEach(moderator => {
-            if (moderator.socket && moderator.socket.readyState == WebSocket.OPEN) {
-                moderator.socket.send(JSON.stringify({ type: "update-purchase", data: createdPurchase }));
+            const socket = moderator.socket;
+            if (socket && socket.readyState == WebSocket.OPEN) {
+                socket.send(updateMsg);
             }
         });
-        res.json({ msg: "Success" });
+        Display.broadcastMessage(updateMsg);
+
+        res.json({ msg: "success", purchase: createdPurchase });
     }
     catch (error) {
         console.log(`Error making purchase: ${error}`);
@@ -126,14 +153,17 @@ const confirmPurchase_post = (req, res) => {
             return res.status(400).json({ error: "Transaction already completed" });
         }
 
-        purchase.state = PurchaseState.purchased;
+        updateState(purchase, PurchaseState.purchased);
         logPurchase("confirm-purchase", purchase);
+        const updateMsg = JSON.stringify({ type: "update-purchase", data: purchase });
         moderators.forEach(moderator => {
             const socket = moderator.socket;
             if (socket && socket.readyState == WebSocket.OPEN) {
-                socket.send(JSON.stringify({ type: "update-purchase", data: purchase }));
+                socket.send(updateMsg);
             }
         });
+        Display.broadcastMessage(updateMsg);
+
         res.json({ msg: "Success", data: purchase });
     }
     catch (error) {
@@ -151,14 +181,17 @@ const discardPurchase_post = (req, res) => {
             return res.status(400).json({ error: "Unable to find purchase" });
         }
 
-        purchase.state = PurchaseState.discarded;
+        PurchaseState(purchase, PurchaseState.discarded);
         logPurchase("discard-purchase", purchase);
+        const updateMsg = JSON.stringify({ type: "update-purchase", data: purchase });
         moderators.forEach(moderator => {
             const socket = moderator.socket;
             if (socket && socket.readyState == WebSocket.OPEN) {
-                socket.send(JSON.stringify({ type: "update-purchase", data: purchase }));
+                socket.send(updateMsg);
             }
         });
+        Display.broadcastMessage(updateMsg);
+
         res.json({ msg: "Success", data: purchase });
 
     }
@@ -179,14 +212,16 @@ const unconfirmPurchase_post = (req, res) => {
 
 
         if (purchase.state !== PurchaseState.pending) {
-            purchase.state = PurchaseState.pending;
+            updateState(purchase, PurchaseState.pending);
             logPurchase("unconfirm-purchase", purchase);
+            const updateMsg = JSON.stringify({ type: "update-purchase", data: purchase });
             moderators.forEach(moderator => {
                 const socket = moderator.socket;
                 if (socket && socket.readyState == WebSocket.OPEN) {
-                    socket.send(JSON.stringify({ type: "update-purchase", data: purchase }));
+                    socket.send(updateMsg);
                 }
             });
+            Display.broadcastMessage(updateMsg);
         }
         res.json({ msg: "Success", data: purchase });
 

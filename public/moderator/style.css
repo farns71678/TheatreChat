@@ -41,6 +41,19 @@ svg {
     align-items: center;
 }
 
+.msg-row.flagged {
+    background-color: var(--bs-danger-bg-subtle);
+}
+
+.msg-flag {
+    display: none;
+    color: var(--bs-danger);
+}
+
+.msg-row.flagged .msg-flag {
+    display: inline-block;
+}
+
 /*
 .msg-row i,
 .purchase-row i {
@@ -73,7 +86,8 @@ svg {
     color: var(--bs-info);
 }*/
 
-.purchase-username {
+.purchase-username,
+.msg-username {
     color: orange;
     font-weight: bold;
 }
