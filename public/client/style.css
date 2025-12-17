@@ -115,3 +115,13 @@ svg {
         color: var(--bs-danger-text-emphasis);
     }
 }
+
+h2 {
+    text-align: center;
+}
+
+@media only screen and (max-width: 500px) {
+    #purchased-container .purchase-row>div {
+        flex-direction: column;
+    }
+}

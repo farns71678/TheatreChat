@@ -6,8 +6,7 @@ const port = urlObj.port || (urlObj.protocol === "https:" ? "443" : "80");
 const socketUrl = `ws://${domain}:${port}/ws/display`;
 let socket = null;
 
-// TODO: add qr codes to page
-// TODO: make purchases visible
+
 
 const PurchaseState = {
     pending: 'pending',
@@ -78,16 +77,16 @@ class DisplaySocket extends WebSocketWithHeartbeat {
 function addMsgRow(data) {
     const msgRows = document.querySelectorAll(".msg-row");
 
-    if (msgRows.length > 0 && msgRows[msgRows.length - 1].getAttribute("data-username") === data.username) {
+    if (msgRows.length > 0 && msgRows[0].getAttribute("data-username") === data.username) {
         const msg = createElementFromHTML(`<p class='msg flex-grow-1 mb-0' data-id="${data.id}" data-msg="${encodeURIComponent(JSON.stringify(data))}">${data.msg}</p>`);
-        msgRows[msgRows.length - 1].appendChild(msg);
+        msgRows[0].querySelector('div.msg-username').insertAdjacentElement('afterend', msg);
     }
     else {
         const row = createElementFromHTML(`<div class='msg-row w-100 p-2 ps-3 pe-3 mb-2 mt-2' data-username="${data.username}">
             <div class="msg-username ms-2">${data.username}</div>
             <p class='msg flex-grow-1 mb-0' data-id="${data.id}" data-msg="${encodeURIComponent(JSON.stringify(data))}">${data.msg}</p>
         </div>`);
-        msgBox.appendChild(row);
+        msgBox.prepend(row);
     }
 }
 
@@ -104,22 +103,35 @@ function addPurchaseRow(data) {
                 </div>
             </div>
         </div>`);
-    
-    // const clearPurchaseBtn = row.querySelector(".clear-purchase-btn");
-    // clearPurchaseBtn.addEventListener("click", dismissPurchase);
-    // const confirmPurchaseBtn = row.querySelector(".confirm-purchase-btn");
-    // confirmPurchaseBtn.addEventListener("click", confirmPurchase);
-    // // clearPurchaseBtn.addEventListener("mouseenter", clearPurchaseBtnEnter);
-    // // clearPurchaseBtn.addEventListener("mouseleave", clearPurchaseBtnLeave);
-    // updateBadgeCount("#purchase-tab", 1);
-    purchaseContainer.appendChild(row);
+    purchaseContainer.prepend(row);
 }
 
 try {
     socket = new DisplaySocket(socketUrl);
+
 }
 catch (err) {
     console.log(`Unable to connect to WebSocket: ${err}`);
+}
+
+initQRCode();
+
+function initQRCode() {
+    const currentUrl = window.location.href;
+    const urlObj = new URL(currentUrl);
+    const domain = urlObj.hostname;
+    const port = urlObj.port || (urlObj.protocol === "https:" ? "443" : "80");
+    const url = `${urlObj.protocol}//${domain}:${port}/client`;
+    const qrCodeContainer = document.getElementById("qr-code-container");
+    qrCodeContainer.innerHTML = "";
+    const qrCode = new QRCode({
+        content: url,
+        container: "svg-viewbox",
+        padding: 2,
+        join: true
+    });
+    const svg = qrCode.svg();
+    qrCodeContainer.innerHTML = svg;
 }
 
 function createElementFromHTML(htmlString) {

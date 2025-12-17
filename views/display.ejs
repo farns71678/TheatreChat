@@ -16,12 +16,17 @@
         crossorigin="anonymous"></script>
 
     <script src="/ws/socket.js"></script>
+    <script src="/lib/qrcode.min.js"></script>
 </head>
 
 <body class="p-3 d-flex flex-column m-0">
     
     
     <div id="display-flex" class="d-flex h-100 container align-items-stretch">
+        <div id="qr-code-column" class="flex-grow-1 me-4 d-flex flex-column justify-content-center align-items-center">
+            <h5>Scan the QR Code to join</h5>
+            <div id="qr-code-container" class="w-100 p-2"></div>
+        </div>
         <div class="flex-grow-1 me-2">
             <h2 class="w-100 text-center">Chat Messages</h2>
             <div id="msg-container" class="pt-1"></div>
