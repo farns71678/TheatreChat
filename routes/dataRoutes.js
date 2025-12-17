@@ -11,5 +11,6 @@ router.post('/purchaseitem', dataController.purchaseItem_post);
 router.post('/confirmpurchase', checkUser, requireAuth, dataController.confirmPurchase_post);
 router.post('/discardpurchase', checkUser, requireAuth, dataController.discardPurchase_post);
 router.post('/unconfirmpurchase', checkUser, requireAuth, dataController.unconfirmPurchase_post);
+router.post('/getpurchasestate', dataController.getPurchaseState_post);
 
 module.exports = router;

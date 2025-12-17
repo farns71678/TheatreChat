@@ -34,8 +34,9 @@ svg {
     font-weight: bold;
 }
 
-.msg-row {
-    background-color: var(--bs-tertiary-bg);
+.msg-row,
+.purchase-row {
+    background-color: var(--bs-dark);
     border-radius: 0.5em;
     align-items: center;
 }
@@ -68,7 +69,26 @@ svg {
     color: var(--bs-info);
 }
 
+.purchase-username,
 .msg-username {
-    font-weight: bold;
     color: orange;
+    font-weight: bold;
 }
+
+.purchase-cost {
+    color: lightskyblue;
+    font-weight: bold;
+}
+
+body {
+    height: 100vh !important;
+}
+
+/* Medium devices (tablets  up to 992px) */
+@media (max-width: 992px) { 
+    #display-flex {
+        margin: 0 !important;
+        max-width: 100vw !important;
+        width: 100% !important;
+    }
+ }

@@ -71,6 +71,7 @@ class DisplaySocket extends WebSocketWithHeartbeat {
 
     onOpen() {
         this.sendMessage(JSON.stringify({ type: "get-messages" }));
+        this.sendMessage(JSON.stringify({ type: "get-purchases" }));
     }
 }
 
@@ -82,7 +83,7 @@ function addMsgRow(data) {
         msgRows[msgRows.length - 1].appendChild(msg);
     }
     else {
-        const row = createElementFromHTML(`<div class='msg-row w-100 p-2 ps-3 mb-2 mt-2' data-username="${data.username}">
+        const row = createElementFromHTML(`<div class='msg-row w-100 p-2 ps-3 pe-3 mb-2 mt-2' data-username="${data.username}">
             <div class="msg-username ms-2">${data.username}</div>
             <p class='msg flex-grow-1 mb-0' data-id="${data.id}" data-msg="${encodeURIComponent(JSON.stringify(data))}">${data.msg}</p>
         </div>`);
@@ -91,8 +92,8 @@ function addMsgRow(data) {
 }
 
 function addPurchaseRow(data) {
-    const purchaseContainer = document.getElementById("#purchase-container");
-    const row = createElementFromHTML(`<div class='purchase-row w-100 p-2 ps-3 mb-2 mt-2' data-id="${data.id}" data-purchase="${encodeURIComponent(JSON.stringify(data))}">
+    const purchaseContainer = document.getElementById("purchase-container");
+    const row = createElementFromHTML(`<div class='purchase-row w-100 p-2 ps-3 pe-3 mb-2 mt-2' data-id="${data.id}" data-purchase="${encodeURIComponent(JSON.stringify(data))}">
             <div class="d-flex w-100 align-items-center">
                 <div>
                     Purchased by: <span class="purchase-username ms-2">${data.username}</span>

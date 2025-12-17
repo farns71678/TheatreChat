@@ -4,7 +4,7 @@ const cookie = require('cookie');
 const cookieParser = require('cookie-parser');
 const { sessions, maxSessionAge } = require('./include/session');
 const { checkUser, requireAuth, requireAdminAuth } = require('./middleware/authMiddleware');
-const { moderators, Display, chatMessages, MsgState, purchases, flaggedUsernames, updateState } = require('./include/moderator');
+const { moderators, Display, chatMessages, MsgState, purchases, flaggedUsernames, updateState, PurchaseState } = require('./include/moderator');
 const { logMessage } = require("./include/log");
 const authRoutes = require('./routes/authRoutes');
 const dataRoutes = require('./routes/dataRoutes');
@@ -177,6 +177,10 @@ function handleDisplayConnection(socket, req) {
             }
             else if (data.type === 'get-messages') {
                 const reply = { type: "update-messages", data: { messages: chatMessages.filter(m => m.state === MsgState.displayed) } };
+                socket.send(JSON.stringify(reply));
+            }
+            else if (data.type === 'get-purchases') {
+                const reply = { type: "update-purchases", data: { purchases: purchases.filter(p => p.state === PurchaseState.purchased) }};
                 socket.send(JSON.stringify(reply));
             }
         }

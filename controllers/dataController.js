@@ -181,7 +181,7 @@ const discardPurchase_post = (req, res) => {
             return res.status(400).json({ error: "Unable to find purchase" });
         }
 
-        PurchaseState(purchase, PurchaseState.discarded);
+        updateState(purchase, PurchaseState.discarded);
         logPurchase("discard-purchase", purchase);
         const updateMsg = JSON.stringify({ type: "update-purchase", data: purchase });
         moderators.forEach(moderator => {
@@ -232,6 +232,24 @@ const unconfirmPurchase_post = (req, res) => {
     }
 }
 
+const getPurchaseState_post = (req, res) => {
+    try {
+        const purchaseIds = req.body.purchaseIds;
+        const states = [];
+        purchaseIds.forEach(id => {
+            const purchase = purchases.find(p => p.id === id);
+            if (purchase) {
+                states.push({ id: purchase.id, state: purchase.state });
+            }
+        });
+        res.json({ purchases: states });
+    }
+    catch (error) {
+        console.log(`Error retrieving purchase states: ${error}`);
+        res.status(500).json({ error: "Unable to retrieve purchase states" });
+    }
+}
+
 
 async function loadMoneySpendingOptionFile() {
     const data = await fs.readFile(optionsFilePath, { encoding: 'utf8' });
@@ -250,4 +268,4 @@ async function loadMoneySpendingOptionFile() {
     return optionlist;
 }
 
-module.exports = { chatmsg_post, purchaseOptions_get, modifyPurchaseOptions_post, purchaseItem_post, confirmPurchase_post, discardPurchase_post, unconfirmPurchase_post };
+module.exports = { chatmsg_post, purchaseOptions_get, modifyPurchaseOptions_post, purchaseItem_post, confirmPurchase_post, discardPurchase_post, unconfirmPurchase_post, getPurchaseState_post };

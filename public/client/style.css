@@ -95,3 +95,23 @@ svg {
     color: lightskyblue;
     font-weight: bold;
 }
+
+.purchase-row[data-state="pending"] .purchase-state {
+    color: orange;
+}
+
+.purchase-row[data-state="purchased"] .purchase-state {
+    color: var(--bs-success-text-emphasis);
+
+    i {
+        color: var(--bs-success-text-emphasis);
+    }
+}
+
+.purchase-row[data-state="discarded"] .purchase-state {
+    color: var(--bs-danger-text-emphasis);
+
+    i {
+        color: var(--bs-danger-text-emphasis);
+    }
+}

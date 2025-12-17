@@ -1,5 +1,13 @@
 const chatForm = document.getElementById("chat-form");
 
+const purchaseMap = {
+    'pending': 'Pending...',
+    'purchased': 'Confirmed <i class="bi bi-check-lg"></i>',
+    'discarded': 'Discarded <i class="bi bi-trash"></i>'
+};
+
+let purchaseUpdateInterval = null;
+
 loadOptions();
 
 chatForm.addEventListener("submit", (event) => {
@@ -58,14 +66,16 @@ if (purchaseButton) {
             const purchase = data.purchase;
             if (purchase) {
                 const purchasedContainer = document.getElementById("purchased-container");
-                purchasedContainer.appendChild(createElementFromHTML(`<div class="purchase-row w-100 p-2 ps-3 mb-2 mt-2" data-id="${purchase.id}" data-purchase="${encodeURIComponent(JSON.stringify(purchase))}">
-                    <div class="d-flex">
+                purchasedContainer.appendChild(createElementFromHTML(`<div class="purchase-row w-100 p-2 ps-3 mb-2 mt-2" data-state="${purchase.state}" data-id="${purchase.id}" data-purchase="${encodeURIComponent(JSON.stringify(purchase))}">
+                    <div class="d-flex me-2">
                         <div class="d-flex align-items-center">
                             <div class="purchase-cost me-2">$${purchase.cost}</div>
                             <div class='msg flex-grow-1'>${purchase.description}</div>
                         </div>
+                        <div class="flex-grow-1 text-end purchase-state fw-bold">${purchaseMap[purchase.state || "pending"]}</div>
                     </div>
                 </div>`));
+                startPurchaseUpdates();
             }
         }
         else {
@@ -171,6 +181,42 @@ function initUsernameModal() {
     });
 
     usernameModal.show();
+}
+
+function startPurchaseUpdates() {
+    if (purchaseUpdateInterval) return;
+    purchaseUpdateInterval = setInterval(async () => {
+        const purchases = Array.from(document.querySelectorAll(".purchase-row")).map(row => row.getAttribute("data-id"));
+        if (purchases.length === 0) {
+            clearInterval(purchaseUpdateInterval);
+            return;
+        }
+
+        const res = await fetch('/getpurchasestate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json; charset=UTF-8'
+            },
+            body: JSON.stringify({ purchaseIds: purchases })
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            data.purchases.forEach(purchase => {
+                const row = document.querySelector(`.purchase-row[data-id='${purchase.id}']`);
+                if (row) {
+                    row.setAttribute('data-state', purchase.state);
+                    const stateDiv = row.querySelector(`.purchase-state`);
+                    if (stateDiv) {
+                        stateDiv.innerHTML = purchaseMap[purchase.state || "pending"];
+                    }
+                }
+            });
+        }
+        else {
+            console.log("Unable to get purchase updates");
+        }
+    }, 15000);
 }
 
 function createElementFromHTML(htmlString) {

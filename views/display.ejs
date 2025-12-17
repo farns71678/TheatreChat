@@ -18,17 +18,17 @@
     <script src="/ws/socket.js"></script>
 </head>
 
-<body class="container p-3 d-flex flex-column">
+<body class="p-3 d-flex flex-column m-0">
     
     
-    <div class="d-flex h-100 container align-items-stretch">
-        <div class="flex-grow-1">
+    <div id="display-flex" class="d-flex h-100 container align-items-stretch">
+        <div class="flex-grow-1 me-2">
             <h2 class="w-100 text-center">Chat Messages</h2>
-            <div id="msg-container"></div>
+            <div id="msg-container" class="pt-1"></div>
         </div>
-        <div class="flex-grow-1">
+        <div class="flex-grow-1 ms-2">
             <h2 class="w-100 text-center">Purchases</h2>
-            <div id="purchase-container"></div>
+            <div id="purchase-container" class="pt-1"></div>
         </div>
     </div>
 
