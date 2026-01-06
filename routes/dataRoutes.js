@@ -12,5 +12,6 @@ router.post('/confirmpurchase', checkUser, requireAuth, dataController.confirmPu
 router.post('/discardpurchase', checkUser, requireAuth, dataController.discardPurchase_post);
 router.post('/unconfirmpurchase', checkUser, requireAuth, dataController.unconfirmPurchase_post);
 router.post('/getpurchasestate', dataController.getPurchaseState_post);
+router.get('/userdata', dataController.getUserData_get);
 
 module.exports = router;

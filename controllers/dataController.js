@@ -1,11 +1,18 @@
 const fs = require('node:fs/promises');
 const WebSocket = require('ws');
+const cookie = require('cookie');
 const uuid = require('uuid');
 const { logPurchase } = require('../include/log');
 const { moderators, Display, chatMessages, MsgState, purchases, PurchaseState, flaggedUsernames, updateState } = require('../include/moderator');
 const { time } = require('node:console');
 const optionsFilePath = './include/data/waystospendyourmoney.csv';
 let optionlist = null;
+
+const usernameCookieAge = 1000 * 60 * 60 * 8;
+
+const createUsernameCookie = (username, res) => {
+    res.cookie("username", username, { maxAge: usernameCookieAge });
+};
 
 const chatmsg_post = (req, res) => {
     try {
@@ -34,6 +41,7 @@ const chatmsg_post = (req, res) => {
                 }
             });
             chatMessages.push(createdMsg);
+            createUsernameCookie(body.username, res);
             res.send("success");
             return;
         }
@@ -132,6 +140,7 @@ const purchaseItem_post = (req, res) => {
         });
         Display.broadcastMessage(updateMsg);
 
+        createUsernameCookie(purchase.username, res);
         res.json({ msg: "success", purchase: createdPurchase });
     }
     catch (error) {
@@ -250,6 +259,34 @@ const getPurchaseState_post = (req, res) => {
     }
 }
 
+const getUserData_get = (req, res) => {
+    try {
+        const username = cookie.parse(req.headers.cookie || '').username;
+        if (!username) {
+            res.status(400).json({ error: "Username not specified" });
+            return;
+        }
+
+        const data = { 
+            purchases: purchases.filter(p => p.username === username), 
+            messages: chatMessages.filter(m => m.username === username) 
+        };
+
+        if (data.purchases.length == 0 && data.messages.length == 0) {
+            res.status(404).json({ error: "No data found" });
+            return;
+        }
+
+        createUsernameCookie(username, res);
+        res.json({ data });
+
+    }
+    catch (error) {
+        console.log(`Unable to get user data: ${error}`);
+        res.status(500).json({ error: "Unable to get user data" });
+    }
+}
+
 
 async function loadMoneySpendingOptionFile() {
     const data = await fs.readFile(optionsFilePath, { encoding: 'utf8' });
@@ -268,4 +305,14 @@ async function loadMoneySpendingOptionFile() {
     return optionlist;
 }
 
-module.exports = { chatmsg_post, purchaseOptions_get, modifyPurchaseOptions_post, purchaseItem_post, confirmPurchase_post, discardPurchase_post, unconfirmPurchase_post, getPurchaseState_post };
+module.exports = { 
+    chatmsg_post, 
+    purchaseOptions_get, 
+    modifyPurchaseOptions_post, 
+    purchaseItem_post, 
+    confirmPurchase_post, 
+    discardPurchase_post, 
+    unconfirmPurchase_post, 
+    getPurchaseState_post,
+    getUserData_get,
+};

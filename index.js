@@ -166,7 +166,6 @@ function handleModeratorConnection(socket, req) {
 
 function handleDisplayConnection(socket, req) {
     const clientId = uuid.v4();
-    socket.isAlive = true;
 
     socket.on("message", (msg) => {
         try {

@@ -16,7 +16,7 @@ chatForm.addEventListener("submit", (event) => {
     sendChatMsg();
 });
 
-initUsernameModal();
+init();
 
 const purchaseModal = document.getElementById('purchase-modal');
 if (purchaseModal) {
@@ -65,17 +65,7 @@ if (purchaseButton) {
             purchaseModal.querySelector("#purchase-modal-close-btn").click();
             const purchase = data.purchase;
             if (purchase) {
-                const purchasedContainer = document.getElementById("purchased-container");
-                purchasedContainer.appendChild(createElementFromHTML(`<div class="purchase-row w-100 p-2 ps-3 mb-2 mt-2" data-state="${purchase.state}" data-id="${purchase.id}" data-purchase="${encodeURIComponent(JSON.stringify(purchase))}">
-                    <div class="d-flex me-2">
-                        <div class="d-flex align-items-center">
-                            <div class="purchase-cost me-2">$${purchase.cost}</div>
-                            <div class='msg flex-grow-1'>${purchase.description}</div>
-                        </div>
-                        <div class="flex-grow-1 text-end purchase-state fw-bold">${purchaseMap[purchase.state || "pending"]}</div>
-                    </div>
-                </div>`));
-                startPurchaseUpdates();
+                addPurchase(purchase);
             }
         }
         else {
@@ -83,6 +73,20 @@ if (purchaseButton) {
         }
 
     });
+}
+
+function addPurchase(purchase) {
+    const purchasedContainer = document.getElementById("purchased-container");
+    purchasedContainer.appendChild(createElementFromHTML(`<div class="purchase-row w-100 p-2 ps-3 mb-2 mt-2" data-state="${purchase.state}" data-id="${purchase.id}" data-purchase="${encodeURIComponent(JSON.stringify(purchase))}">
+        <div class="d-flex me-2">
+            <div class="d-flex align-items-center">
+                <div class="purchase-cost me-2">$${purchase.cost}</div>
+                <div class='msg flex-grow-1'>${purchase.description}</div>
+            </div>
+            <div class="flex-grow-1 text-end purchase-state fw-bold">${purchaseMap[purchase.state || "pending"]}</div>
+        </div>
+    </div>`));
+    startPurchaseUpdates();
 }
 
 function sendChatMsg() {
@@ -114,15 +118,19 @@ function sendChatMsg() {
             body: JSON.stringify({ username, msg })
         });
 
-        const msgContainer = document.getElementById("msg-container");
-        msgContainer.appendChild(createElementFromHTML(`<div class='msg-row d-flex w-100 mt-1 mb-1 p-0 ps-1 p3-1' data-msg="${encodeURIComponent(msg)}"><div class='msg flex-grow-1'>${msg}</div><span class='icon-row'></span></div>`))
-        const last = msgContainer.querySelector(".msg-row:last-child");
-        last.scrollIntoView({ behavior: 'smooth' });
+        addMessage(msg);
         msgBox.value = "";
     }
     catch (err) {
         console.log(`Unable to send message: ${err}`);
     }
+}
+
+function addMessage(msg) {
+    const msgContainer = document.getElementById("msg-container");
+    msgContainer.appendChild(createElementFromHTML(`<div class='msg-row d-flex w-100 mt-1 mb-1 p-0 ps-1 p3-1' data-msg="${encodeURIComponent(msg)}"><div class='msg flex-grow-1'>${msg}</div><span class='icon-row'></span></div>`))
+    const last = msgContainer.querySelector(".msg-row:last-child");
+    last.scrollIntoView({ behavior: 'smooth' });
 }
 
 async function loadOptions() {
@@ -148,6 +156,38 @@ async function loadOptions() {
     catch (err) {
         console.log(`Couldn't get option files: ${err}`);
     }
+}
+
+async function init() {
+    const username = $.cookie("username");
+    if (!username) {
+        initUsernameModal();
+        return;
+    }
+
+    const usernameInput = document.getElementById("username-input");
+    usernameInput.value = username;
+
+    const res = await fetch('/userdata');
+
+    if (!res.ok) {
+        if (res.status === 404) {
+            initUsernameModal();
+            return;
+        }
+    }
+    else {
+        const data = (await res.json()).data;
+
+        data.messages.forEach(message => {
+            addMessage(message.msg);
+        });
+
+        data.purchases.forEach(purchase => {
+            addPurchase(purchase);
+        });
+    }
+
 }
 
 function initUsernameModal() {
